@@ -8,6 +8,14 @@ small Polkit-protected host helper to create systemd mount units.
 This is an early release. The main mount flow works, but packaging and desktop
 integration are still being refined.
 
+## Screenshots
+
+![EasyMount shares view in light mode](docs/images/shares-light.png)
+
+| Shares in dark mode | Settings | Add network mount |
+| --- | --- | --- |
+| ![EasyMount shares view in dark mode](docs/images/shares-dark.png) | ![EasyMount settings in dark mode](docs/images/settings-dark.png) | ![EasyMount add network mount dialog](docs/images/add-share-dark.png) |
+
 ## Features
 
 - Add, edit and delete SMB and NFS mounts from a GUI

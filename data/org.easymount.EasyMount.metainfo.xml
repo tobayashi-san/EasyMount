@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.easymount.EasyMount</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="org.easymount">
+    <name>EasyMount contributors</name>
+  </developer>
+  <name>EasyMount</name>
+  <summary>Configure persistent SMB and NFS network mounts</summary>
+  <description>
+    <p>
+      EasyMount helps Linux desktop users configure SMB and NFS mounts without
+      editing fstab by hand. It stores profiles in the user configuration,
+      keeps SMB passwords in Secret Service, and delegates privileged mount
+      changes to a small Polkit helper.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.easymount.EasyMount.desktop</launchable>
+  <categories>
+    <category>Network</category>
+    <category>Utility</category>
+  </categories>
+  <url type="homepage">https://github.com/tobayashi-san/EasyMount</url>
+  <releases>
+    <release version="0.1.0" date="2026-06-01"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="body" x1="22" y1="16" x2="104" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4f8df7"/>
+      <stop offset="1" stop-color="#18a06d"/>
+    </linearGradient>
+    <linearGradient id="slot" x1="34" y1="39" x2="94" y2="75" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#eef6ff"/>
+      <stop offset="1" stop-color="#d7f7e8"/>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="18" width="100" height="92" rx="24" fill="url(#body)"/>
+  <path d="M34 42c0-7.7 6.3-14 14-14h32c7.7 0 14 6.3 14 14v22c0 7.7-6.3 14-14 14H48c-7.7 0-14-6.3-14-14V42Z" fill="url(#slot)" opacity=".96"/>
+  <path d="M43 91h42" stroke="#eef6ff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M52 77v15m24-15v15" stroke="#eef6ff" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="50" cy="54" r="6" fill="#255a78"/>
+  <circle cx="78" cy="54" r="6" fill="#255a78"/>
+  <path d="M41 34h46" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+</svg>

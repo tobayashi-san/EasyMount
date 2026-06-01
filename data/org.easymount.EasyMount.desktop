@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=EasyMount
+Comment=Configure persistent SMB and NFS network mounts
+Exec=easymount
+Icon=org.easymount.EasyMount
+Terminal=false
+Categories=Network;
+StartupNotify=true

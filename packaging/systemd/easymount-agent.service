@@ -1,0 +1,10 @@
+[Unit]
+Description=Prepare EasyMount SMB credentials after login
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/easymount-agent
+
+[Install]
+WantedBy=default.target

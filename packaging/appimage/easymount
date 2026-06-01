@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+SCRIPT=$(
+  CDPATH= cd -- "$(dirname -- "$0")" && pwd
+)
+APPDIR=$(
+  CDPATH= cd -- "${SCRIPT}/../.." && pwd
+)
+
+export PYTHONPATH="${APPDIR}/usr/lib/easymount${PYTHONPATH:+:${PYTHONPATH}}"
+export XDG_DATA_DIRS="${APPDIR}/usr/share${XDG_DATA_DIRS:+:${XDG_DATA_DIRS}}"
+
+exec python3 -m easymount.app "$@"

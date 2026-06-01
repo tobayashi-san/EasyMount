@@ -1,62 +1,80 @@
 # EasyMount
 
-EasyMount is a Linux desktop app for configuring persistent SMB and NFS network
-mounts from a GUI. It creates systemd mount units through a small host helper
-instead of asking users to edit `fstab`.
+EasyMount is a Linux desktop app for setting up persistent SMB and NFS network
+mounts without editing `fstab` by hand. It provides a GTK 4 GUI, stores share
+profiles in your user config, keeps SMB passwords in Secret Service and uses a
+small Polkit-protected host helper to create systemd mount units.
 
-## Status
+This is an early release. The main mount flow works, but packaging and desktop
+integration are still being refined.
 
-This project is still an early MVP. The core flow works, but packaging and
-desktop integration are still being prepared.
+## Features
 
-Implemented:
+- Add, edit and delete SMB and NFS mounts from a GUI
+- Choose per share whether it mounts on access or stays mounted
+- Persist mounts across reboots through systemd `.mount` and `.automount` units
+- Store SMB passwords through `secret-tool` instead of writing them to unit files
+- Check host requirements from the Settings page
+- Optional sidebar entries for GNOME Files, GTK file pickers and KDE Places
+- AppImage and Flatpak builds for testing on different distributions
 
-- GTK 4 GUI for adding, editing and deleting SMB/NFS shares
-- per-share mount behavior: mount on access or always mounted
-- profile storage under `~/.config/easymount/profiles.json`
-- SMB passwords stored through Secret Service via `secret-tool`
-- privileged host helper for systemd mount/automount units
-- Polkit policy, desktop file, icon and AppStream metadata
-- Flatpak manifest scaffold for the GUI package
-- Settings check for the host helper, systemd, SMB/NFS mount helpers and secret storage
-- test coverage for models, helper behavior, launcher behavior and bookmarks
+## Install
 
-## Install For Testing
+Download the latest files from the
+[GitHub Releases page](https://github.com/tobayashi-san/EasyMount/releases).
 
-The development installer writes below `/usr`, installs the host helper, Polkit
-policy, desktop integration files and the optional user agent service.
+AppImage:
+
+```sh
+chmod +x EasyMount-0.1.0-x86_64.AppImage
+./EasyMount-0.1.0-x86_64.AppImage
+```
+
+Flatpak bundle:
+
+```sh
+flatpak install --user EasyMount-0.1.0-x86_64.flatpak
+flatpak run org.easymount.EasyMount
+```
+
+On first run, open `Settings -> Host helper` and use `Install / Update Helper`.
+The helper is required because sandboxed apps and normal user processes cannot
+write systemd mount units directly.
+
+## System Requirements
+
+EasyMount targets systemd-based Linux distributions. Install distro packages
+that provide:
+
+- Python 3.10+
+- GTK 4 and PyGObject
+- Secret Service / libsecret `secret-tool`
+- Polkit / `pkexec`
+- systemd / `systemctl`
+- `cifs-utils` for SMB shares
+- NFS client tools, usually `nfs-utils` or `nfs-common`
+
+The Settings page checks the host helper, systemd, SMB/NFS mount helpers and
+secret storage availability.
+
+## Development Install
+
+For source-tree testing, install the helper and desktop integration files:
 
 ```sh
 sudo ./scripts/install-helper.sh
-```
-
-Run the installed app:
-
-```sh
-easymount
-```
-
-Run from the source tree:
-
-```sh
 python -m easymount.app
 ```
 
-The GUI also has `Settings -> Host helper -> Install / Update Helper`. That
-path is intended for later Flatpak/AppImage builds and installs only the host
-helper pieces through Polkit.
-
-## Uninstall Test Install
-
-First delete configured shares in the GUI if you want their systemd mount units
-removed cleanly. Then remove the development install:
+Uninstall the development install:
 
 ```sh
 sudo ./scripts/uninstall-helper.sh
 ```
 
-The uninstall script removes files installed by `scripts/install-helper.sh`. It
-keeps user profiles, saved secrets and existing mount units by default.
+Delete configured shares in the GUI first if you want their generated systemd
+mount units removed cleanly. The uninstall script intentionally keeps user
+profiles and saved secrets.
 
 ## Documentation
 
@@ -67,21 +85,21 @@ keeps user profiles, saved secrets and existing mount units by default.
 - [Architecture](docs/ARCHITECTURE.md)
 - [Helper protocol](docs/helper-protocol.md)
 
-## Runtime Dependencies
+## Security Model
 
-Install distro packages that provide:
+EasyMount does not mount network shares directly from the GUI. The GUI asks a
+small host helper to validate profiles and create or remove systemd units. That
+helper runs through Polkit, so privileged changes require the normal desktop
+authorization prompt. SMB passwords are passed only when needed and are written
+to root-owned runtime credential files under `/run/easymount`.
 
-- Python 3.10+
-- PyGObject / GTK 4
-- libsecret `secret-tool`
-- Polkit / `pkexec`
-- systemd
-- `cifs-utils` for SMB
-- NFS client tools, usually `nfs-utils` or `nfs-common`
+Flatpak may show broad-permission warnings because EasyMount needs home access
+for mount paths, network access for share checks, Secret Service access for SMB
+passwords and host access to install or call the helper.
 
-## Packaging Direction
+## Project Status
 
-Flatpak and AppImage builds should ship the GUI, desktop file, icon and
-AppStream metadata. The privileged mount helper must stay installed on the host
-at `/usr/libexec/easymount-helper`, because sandboxed apps cannot manage systemd
-mount units directly.
+EasyMount is version `0.1.0`. Treat it as a test release and keep backups of
+important mount configuration while trying it. Bug reports and reproducible
+mount errors are welcome in
+[GitHub Issues](https://github.com/tobayashi-san/EasyMount/issues).

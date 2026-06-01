@@ -113,6 +113,7 @@ rm -f \\
 
 if command -v systemctl >/dev/null 2>&1; then
   systemctl daemon-reload >/dev/null 2>&1 || true
+  systemctl --global enable easymount-agent.service >/dev/null 2>&1 || true
 fi
 
 printf '%s\\n' "Installed EasyMount host helper."
@@ -134,6 +135,7 @@ rm -f \\
 rm -rf "${prefix}/lib/easymount"
 
 if command -v systemctl >/dev/null 2>&1; then
+  systemctl --global disable easymount-agent.service >/dev/null 2>&1 || true
   systemctl daemon-reload >/dev/null 2>&1 || true
 fi
 

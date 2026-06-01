@@ -18,23 +18,25 @@ def main() -> int:
     failures: list[str] = []
 
     for profile in profiles:
-        if not profile.enabled or profile.type is not ProfileType.SMB:
+        if not profile.enabled:
             continue
-        if not smb_requires_credentials(profile):
-            continue
-        try:
-            secret = secret_store.lookup(profile.id) if profile.password_saved else ""
-        except SecretStoreError as exc:
-            failures.append(f"{profile.display_name}: {exc}")
-            continue
-        if profile.password_saved and not secret:
-            failures.append(f"{profile.display_name}: missing secret")
-            continue
-        payload = {"profile": profile.to_dict(), "secret": secret}
-        result = run_helper("prepare-credentials", payload)
-        if result.returncode != 0:
-            failures.append(f"{profile.display_name}: {result.stderr.strip() or result.stdout.strip()}")
-            continue
+
+        payload = {"profile": profile.to_dict()}
+        if profile.type is ProfileType.SMB and smb_requires_credentials(profile):
+            try:
+                secret = secret_store.lookup(profile.id) if profile.password_saved else ""
+            except SecretStoreError as exc:
+                failures.append(f"{profile.display_name}: {exc}")
+                continue
+            if profile.password_saved and not secret:
+                failures.append(f"{profile.display_name}: missing secret")
+                continue
+            payload["secret"] = secret
+            result = run_helper("prepare-credentials", payload)
+            if result.returncode != 0:
+                failures.append(f"{profile.display_name}: {result.stderr.strip() or result.stdout.strip()}")
+                continue
+
         if profile.mount_mode == MountMode.ALWAYS:
             result = run_helper("mount-now", payload)
             if result.returncode != 0:

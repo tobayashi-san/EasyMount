@@ -23,6 +23,7 @@ The script installs:
 - Polkit policy under `/usr/share/polkit-1/actions`
 - desktop file, icon and AppStream metadata
 - `easymount-agent.service` as a systemd user service file
+- global enablement for the login restore agent
 
 The script accepts a custom prefix:
 
@@ -60,11 +61,13 @@ Source tree command:
 python -m easymount.app
 ```
 
-## Optional SMB Agent
+## Login Restore Agent
 
-Authenticated SMB mounts need credentials prepared after login because
-`/run/easymount/credentials` is runtime-only. Enable the user agent when testing
-SMB shares with saved passwords:
+The installer globally enables `easymount-agent.service`. After the next login it
+prepares saved SMB credentials again and starts every enabled profile whose mount
+behavior is `Always mounted`, so configured mounts come back after a reboot.
+
+For manual testing in the current user session:
 
 ```sh
 systemctl --user daemon-reload

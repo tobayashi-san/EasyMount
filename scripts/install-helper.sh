@@ -77,5 +77,9 @@ fi
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database -q "${prefix}/share/applications" >/dev/null 2>&1 || true
 fi
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl daemon-reload >/dev/null 2>&1 || true
+  systemctl --global enable easymount-agent.service >/dev/null 2>&1 || true
+fi
 
 echo "Installed EasyMount helper, agent service, desktop file, icon and Polkit policy."

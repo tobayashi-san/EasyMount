@@ -1,5 +1,5 @@
 [Unit]
-Description=Prepare EasyMount SMB credentials after login
+Description=Restore EasyMount mounts after login
 After=graphical-session.target
 
 [Service]

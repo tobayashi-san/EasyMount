@@ -20,6 +20,9 @@ class HostInstallTests(unittest.TestCase):
             self.assertIn('cp -R "${repo_dir}/easymount"', content)
             self.assertIn("PYTHONPATH=", content)
             self.assertNotIn("pip install", content)
+            self.assertIn("systemctl --global enable easymount-agent.service", content)
+            uninstall = Path(root, "scripts", "uninstall-host-helper.sh").read_text(encoding="utf-8")
+            self.assertIn("systemctl --global disable easymount-agent.service", uninstall)
 
     def test_flatpak_host_prefix_uses_flatpak_spawn(self) -> None:
         with patch("easymount.host_install.is_flatpak", return_value=True), patch(

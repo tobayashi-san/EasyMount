@@ -3,7 +3,7 @@
 EasyMount should be packaged as two cooperating pieces:
 
 - GUI package: unprivileged app, desktop file, icon and AppStream metadata
-- host helper package: helper executable, Polkit policy and optional user agent
+- host helper package: helper executable, Polkit policy and user login agent
 
 Flatpak and AppImage are good fits for the GUI. The host helper must remain a
 native host install because it manages systemd mount units and runtime
@@ -20,6 +20,8 @@ The native helper package should install:
 - `/usr/lib/systemd/user/easymount-agent.service`
 
 The helper path in the Polkit policy must match the installed libexec wrapper.
+The user agent should be enabled globally by the host-helper package so saved
+profiles can restore credentials and `Always mounted` shares after login.
 
 ## GUI-Driven Helper Install
 

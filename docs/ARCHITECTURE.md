@@ -15,7 +15,8 @@ host helper.
 
 ## Main Modules
 
-- `app.py`: GTK windows, dialogs and status display
+- `ui.py`: GTK windows, dialogs and status display
+- `app.py`: pure helpers, theme options and the GTK CSS theme
 - `models.py`: profile schema, defaults and validation
 - `unit.py`: systemd unit rendering
 - `helper.py`: privileged command handlers

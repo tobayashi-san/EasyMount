@@ -38,17 +38,26 @@ class UnitBundle:
 
 
 def systemd_escape_path(path: str) -> str:
+    """Escape a filesystem path like ``systemd-escape -p`` does.
+
+    Kept as a pure, deterministic reimplementation so unit naming stays hermetic
+    and matches what systemd derives from ``Where=`` (otherwise daemon-reload
+    rejects the unit). Mirrors systemd's ``unit_name_path_escape``.
+    """
     stripped = path.strip("/")
     if not stripped:
         return "-"
 
     result: list[str] = []
-    for byte in stripped.encode("utf-8"):
+    for index, byte in enumerate(stripped.encode("utf-8")):
         char = chr(byte)
         if char == "/":
             result.append("-")
         elif char == "-":
             result.append(r"\x2d")
+        elif index == 0 and char == ".":
+            # systemd escapes a leading dot so unit names never start with one.
+            result.append(r"\x2e")
         elif char.isalnum() or char in ":_.":
             result.append(char)
         else:

@@ -124,6 +124,8 @@ def validate_profile(
         errors.append("profile id must contain only letters, numbers, dot, dash or underscore")
     if not profile.display_name.strip():
         errors.append("display name is required")
+    elif _has_control_characters(profile.display_name):
+        errors.append("display name must not contain control characters or line breaks")
     if not profile.server.strip() or any(ch.isspace() for ch in profile.server) or "/" in profile.server:
         errors.append("server must be a hostname or address without whitespace or slashes")
     if "\x00" in profile.mount_path or "\n" in profile.mount_path:
@@ -184,3 +186,7 @@ def validate_profile(
 
 def _has_credential_newline(value: str) -> bool:
     return "\n" in value or "\r" in value or "\x00" in value
+
+
+def _has_control_characters(value: str) -> bool:
+    return any(unicodedata.category(ch) in {"Cc", "Cf", "Zl", "Zp"} for ch in value)

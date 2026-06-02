@@ -60,6 +60,20 @@ class ModelTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "exported share name"):
             validate_profile(profile, user_home=os.path.expanduser("~"))
 
+    def test_rejects_display_name_with_control_characters(self) -> None:
+        profile = MountProfile(
+            id="nas-1234",
+            type=ProfileType.SMB,
+            display_name="NAS\nWhat=//evil/share",
+            server="nas.local",
+            remote_path="media",
+            mount_path=default_mount_path("NAS"),
+            created_for_uid=os.getuid(),
+            created_for_gid=os.getgid(),
+        )
+        with self.assertRaisesRegex(ValidationError, "control characters"):
+            validate_profile(profile, user_home=os.path.expanduser("~"))
+
     def test_mount_mode_defaults_to_automount_and_serializes(self) -> None:
         profile = MountProfile.from_dict(
             {

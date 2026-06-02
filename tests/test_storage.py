@@ -33,6 +33,30 @@ class StorageTests(unittest.TestCase):
             self.assertEqual(len(profiles), 1)
             self.assertEqual(profiles[0].display_name, "Legacy")
 
+    def test_legacy_profiles_are_migrated_into_new_location(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            profile = MountProfile(
+                id="legacy-1234",
+                type=ProfileType.SMB,
+                display_name="Legacy",
+                server="nas.local",
+                remote_path="media",
+                mount_path="/home/alice/Network/Legacy",
+                created_for_uid=1000,
+                created_for_gid=1000,
+            )
+            legacy_dir = Path(tmp, "easysmb")
+            legacy_dir.mkdir()
+            legacy_dir.joinpath("profiles.json").write_text(
+                json.dumps({"profiles": [profile.to_dict()]}),
+                encoding="utf-8",
+            )
+            with patch.dict(os.environ, {"XDG_CONFIG_HOME": tmp}):
+                ProfileStore().load()
+                new_path = Path(tmp, "easymount", "profiles.json")
+                self.assertTrue(new_path.exists())
+                self.assertEqual(new_path.stat().st_mode & 0o777, 0o600)
+
     def test_flatpak_uses_host_config_dir_for_profiles(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             with patch("easymount.storage.Path.home", return_value=Path(tmp)), patch(

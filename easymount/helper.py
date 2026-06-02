@@ -45,17 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="easymount-helper")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    for name in [
-        "self-check",
-        "validate-profile",
-        "test-connection",
-        "prepare-credentials",
-        "install-mount",
-        "remove-mount",
-        "mount-now",
-        "unmount-now",
-        "status",
-    ]:
+    for name in COMMANDS:
         command = subparsers.add_parser(name)
         command.add_argument("--dry-run", action="store_true")
 
@@ -88,8 +78,9 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def dispatch(args: argparse.Namespace, payload: dict[str, Any]) -> dict[str, Any]:
-    command = args.command.replace("-", "_")
-    handler = globals()[f"handle_{command}"]
+    handler = COMMANDS.get(args.command)
+    if handler is None:
+        raise HelperError("invalid_request", f"unknown command: {args.command}")
     return handler(args, payload)
 
 
@@ -118,8 +109,33 @@ def payload_profile(payload: dict[str, Any]) -> MountProfile:
 
 
 def validate_profile_for_user(profile: MountProfile) -> None:
-    user_home = pwd.getpwuid(profile.created_for_uid).pw_dir
-    validate_profile(profile, user_home=user_home)
+    user = pwd.getpwuid(profile.created_for_uid)
+    validate_profile(profile, user_home=user.pw_dir)
+    validate_profile_owner(profile, user)
+
+
+def validate_profile_owner(profile: MountProfile, user: pwd.struct_passwd) -> None:
+    caller_uid = polkit_caller_uid()
+    if caller_uid is None:
+        return
+    if profile.created_for_uid != caller_uid:
+        raise HelperError("permission_denied", "profile owner does not match the Polkit caller")
+    allowed_gids = set(os.getgrouplist(user.pw_name, user.pw_gid))
+    if profile.created_for_gid not in allowed_gids:
+        raise HelperError("permission_denied", "profile group does not belong to the Polkit caller")
+
+
+def polkit_caller_uid() -> int | None:
+    raw_uid = os.environ.get("PKEXEC_UID")
+    if raw_uid is None:
+        return None
+    try:
+        uid = int(raw_uid)
+    except ValueError as exc:
+        raise HelperError("permission_denied", "invalid Polkit caller uid") from exc
+    if uid < 0:
+        raise HelperError("permission_denied", "invalid Polkit caller uid")
+    return uid
 
 
 def handle_validate_profile(args: argparse.Namespace, payload: dict[str, Any]) -> dict[str, Any]:
@@ -147,6 +163,7 @@ def handle_prepare_credentials(args: argparse.Namespace, payload: dict[str, Any]
     secret = read_secret(payload, required=profile.password_saved)
     if not args.dry_run:
         write_credentials_file(profile, credential_path, secret)
+        disable_boot_mount_for_runtime_credentials(profile)
     return {"credential_path": str(credential_path)}
 
 
@@ -409,6 +426,7 @@ def write_credentials_file(profile: MountProfile, path: Path, secret: str) -> No
 
 def ensure_mountpoint(profile: MountProfile) -> None:
     mount_path = Path(profile.mount_path)
+    assert_no_symlink_ancestors(mount_path)
     if mount_path.is_symlink():
         raise HelperError("invalid_path", "mount path must not be a symlink")
     if mount_path.exists() and not mount_path.is_dir():
@@ -416,6 +434,17 @@ def ensure_mountpoint(profile: MountProfile) -> None:
     mount_path.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chown(mount_path, profile.created_for_uid, profile.created_for_gid)
     os.chmod(mount_path, 0o700)
+
+
+def assert_no_symlink_ancestors(mount_path: Path) -> None:
+    """Reject symlinks anywhere in the path so root never follows a link out of the user's tree."""
+    current = mount_path.parent
+    while True:
+        if current.is_symlink():
+            raise HelperError("invalid_path", "mount path must not contain a symlinked parent directory")
+        if current.parent == current:
+            break
+        current = current.parent
 
 
 def remove_empty_mountpoint(profile: MountProfile) -> None:
@@ -445,10 +474,28 @@ def write_unit_files(bundle: UnitBundle) -> None:
 def activate_profile_units(profile: MountProfile, bundle: UnitBundle) -> None:
     if profile.mount_mode == MountMode.ALWAYS:
         run(["systemctl", "disable", "--now", bundle.automount_unit_name], check=False)
+        if should_defer_mount_until_login(profile):
+            disable_mount_unit_on_boot(bundle.mount_unit_name)
+            systemctl("start", bundle.mount_unit_name)
+            return
         systemctl("enable", "--now", bundle.mount_unit_name)
         return
     run(["systemctl", "disable", "--now", bundle.mount_unit_name], check=False)
     systemctl("enable", "--now", bundle.automount_unit_name)
+
+
+def should_defer_mount_until_login(profile: MountProfile) -> bool:
+    return profile.mount_mode == MountMode.ALWAYS and profile.type is ProfileType.SMB and smb_requires_credentials(profile)
+
+
+def disable_boot_mount_for_runtime_credentials(profile: MountProfile) -> None:
+    if should_defer_mount_until_login(profile):
+        disable_mount_unit_on_boot(unit_name_for_path(profile.mount_path, "mount"))
+
+
+def disable_mount_unit_on_boot(unit_name: str) -> None:
+    run(["systemctl", "disable", unit_name], check=False)
+    run(["systemctl", "reset-failed", unit_name], check=False)
 
 
 def unit_path(unit_name: str) -> Path:
@@ -456,12 +503,7 @@ def unit_path(unit_name: str) -> Path:
 
 
 def systemd_dir() -> Path:
-    return Path(
-        os.environ.get(
-            "EASYMOUNT_SYSTEMD_DIR",
-            os.environ.get("EASYSMB_SYSTEMD_DIR", str(DEFAULT_SYSTEMD_DIR)),
-        )
-    )
+    return Path(os.environ.get("EASYMOUNT_SYSTEMD_DIR", str(DEFAULT_SYSTEMD_DIR)))
 
 
 def bundle_response(bundle: UnitBundle) -> dict[str, Any]:
@@ -556,6 +598,19 @@ def run(command: list[str], *, check: bool = True) -> subprocess.CompletedProces
             stderr=result.stderr,
         )
     return result
+
+
+COMMANDS = {
+    "self-check": handle_self_check,
+    "validate-profile": handle_validate_profile,
+    "test-connection": handle_test_connection,
+    "prepare-credentials": handle_prepare_credentials,
+    "install-mount": handle_install_mount,
+    "remove-mount": handle_remove_mount,
+    "mount-now": handle_mount_now,
+    "unmount-now": handle_unmount_now,
+    "status": handle_status,
+}
 
 
 if __name__ == "__main__":

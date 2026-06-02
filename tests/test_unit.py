@@ -13,6 +13,9 @@ class UnitGenerationTests(unittest.TestCase):
         )
         self.assertEqual(unit_name_for_path("/home/alice/Network/My-Share", "mount"), r"home-alice-Network-My\x2dShare.mount")
 
+    def test_systemd_escape_path_escapes_leading_dot(self) -> None:
+        self.assertEqual(systemd_escape_path("/.hidden/share"), r"\x2ehidden-share")
+
     def test_smb_unit_uses_credential_file_without_password(self) -> None:
         profile = MountProfile(
             id="nas-1234",

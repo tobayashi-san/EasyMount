@@ -8,7 +8,7 @@ agent_tmp="$(mktemp)"
 build_tmp="$(mktemp -d)"
 trap 'rm -f "${policy_tmp}" "${agent_tmp}"; rm -rf "${build_tmp}"' EXIT
 
-install -d "${prefix}/bin" "${prefix}/libexec" /usr/share/polkit-1/actions
+install -d "${prefix}/bin" "${prefix}/libexec" /usr/share/polkit-1/actions /usr/share/polkit-1/rules.d
 install -d \
   "${prefix}/lib/systemd/user" \
   "${prefix}/share/applications" \
@@ -20,6 +20,7 @@ rm -rf \
   "${build_tmp}/easymount/.git" \
   "${build_tmp}/easymount/.agents" \
   "${build_tmp}/easymount/.codex" \
+  "${build_tmp}/easymount/build" \
   "${build_tmp}/easymount/easymount.egg-info" \
   "${build_tmp}/easymount/easysmb.egg-info"
 
@@ -47,6 +48,9 @@ sed "s#/usr/libexec/easymount-helper#${prefix}/libexec/easymount-helper#g" \
 install -m 0644 \
   "${policy_tmp}" \
   /usr/share/polkit-1/actions/org.easymount.helper.policy
+install -m 0644 \
+  "${repo_dir}/packaging/polkit/org.easymount.helper.rules" \
+  /usr/share/polkit-1/rules.d/org.easymount.helper.rules
 
 install -m 0644 \
   "${repo_dir}/data/org.easymount.EasyMount.desktop" \
@@ -69,7 +73,8 @@ rm -f \
   /usr/share/polkit-1/actions/org.easysmb.helper.policy \
   "${prefix}/share/applications/org.easysmb.EasySMB.desktop" \
   "${prefix}/share/metainfo/org.easysmb.EasySMB.metainfo.xml" \
-  "${prefix}/share/icons/hicolor/scalable/apps/org.easysmb.EasySMB.svg"
+  "${prefix}/share/icons/hicolor/scalable/apps/org.easysmb.EasySMB.svg" \
+  /usr/share/polkit-1/rules.d/org.easysmb.helper.rules
 
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then
   gtk-update-icon-cache -q -t -f "${prefix}/share/icons/hicolor" >/dev/null 2>&1 || true

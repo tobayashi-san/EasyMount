@@ -6,13 +6,16 @@ import tempfile
 import unittest
 from argparse import Namespace
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from easymount.models import MountMode, MountProfile, ProfileType, default_mount_path
 from easymount.helper import (
     HelperError,
+    ensure_mountpoint,
+    handle_prepare_credentials,
     handle_install_mount,
     handle_self_check,
+    handle_validate_profile,
     network_mount_info,
     requirements_report,
     unmount_profile,
@@ -32,6 +35,17 @@ class HelperTests(unittest.TestCase):
             created_for_uid=os.getuid(),
             created_for_gid=os.getgid(),
         )
+
+    def test_ensure_mountpoint_rejects_symlinked_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            real_dir = Path(tmp, "real")
+            real_dir.mkdir()
+            link = Path(tmp, "Network")
+            link.symlink_to(real_dir)
+            profile = self.profile()
+            profile.mount_path = str(link / "share")
+            with self.assertRaisesRegex(HelperError, "symlink"):
+                ensure_mountpoint(profile)
 
     def test_install_mount_dry_run_returns_units(self) -> None:
         profile = MountProfile(
@@ -96,6 +110,26 @@ class HelperTests(unittest.TestCase):
         self.assertIn("runtime_dir", payload)
         self.assertEqual(payload["requirements"], {"ok": True, "missing": []})
 
+    def test_validate_profile_allows_matching_polkit_caller(self) -> None:
+        profile = self.profile()
+        with patch("easymount.helper.polkit_caller_uid", return_value=profile.created_for_uid):
+            payload = handle_validate_profile(Namespace(dry_run=False), {"profile": profile.to_dict()})
+        self.assertEqual(payload["profile"]["id"], profile.id)
+
+    def test_validate_profile_rejects_polkit_caller_uid_mismatch(self) -> None:
+        profile = self.profile()
+        with patch("easymount.helper.polkit_caller_uid", return_value=profile.created_for_uid + 1):
+            with self.assertRaisesRegex(HelperError, "owner"):
+                handle_validate_profile(Namespace(dry_run=False), {"profile": profile.to_dict()})
+
+    def test_validate_profile_rejects_polkit_caller_group_mismatch(self) -> None:
+        profile = self.profile()
+        with patch("easymount.helper.polkit_caller_uid", return_value=profile.created_for_uid), patch(
+            "easymount.helper.os.getgrouplist", return_value=[]
+        ):
+            with self.assertRaisesRegex(HelperError, "group"):
+                handle_validate_profile(Namespace(dry_run=False), {"profile": profile.to_dict()})
+
     def test_requirements_report_groups_missing_tools(self) -> None:
         def find(name: str) -> str | None:
             return None if name == "mount.nfs" else f"/usr/bin/{name}"
@@ -156,6 +190,39 @@ class HelperTests(unittest.TestCase):
         self.assertTrue(result["installed"])
         run.assert_any_call(["systemctl", "disable", "--now", result["automount_unit_name"]], check=False)
         systemctl.assert_any_call("enable", "--now", result["mount_unit_name"])
+
+    def test_install_mount_does_not_enable_boot_mount_for_authenticated_always_smb(self) -> None:
+        profile = self.profile()
+        profile.mount_mode = MountMode.ALWAYS
+        profile.username = "alice"
+        profile.password_saved = True
+        with tempfile.TemporaryDirectory() as tmp, patch("easymount.helper.require_root"), patch(
+            "easymount.helper.credential_path_for", return_value=Path(tmp, "public-1234.cred")
+        ), patch("easymount.helper.assert_dependencies"), patch("easymount.helper.ensure_mountpoint"), patch(
+            "easymount.helper.write_unit_files"
+        ), patch("easymount.helper.run", return_value=subprocess.CompletedProcess(["systemctl"], 0, "", "")) as run, patch(
+            "easymount.helper.systemctl"
+        ) as systemctl:
+            result = handle_install_mount(Namespace(dry_run=False), {"profile": profile.to_dict(), "secret": "pw"})
+        self.assertTrue(result["installed"])
+        run.assert_any_call(["systemctl", "disable", "--now", result["automount_unit_name"]], check=False)
+        run.assert_any_call(["systemctl", "disable", result["mount_unit_name"]], check=False)
+        systemctl.assert_any_call("start", result["mount_unit_name"])
+        self.assertNotIn(call("enable", "--now", result["mount_unit_name"]), systemctl.call_args_list)
+
+    def test_prepare_credentials_disables_existing_boot_mount_for_authenticated_always_smb(self) -> None:
+        profile = self.profile()
+        profile.mount_mode = MountMode.ALWAYS
+        profile.username = "alice"
+        profile.password_saved = True
+        bundle = build_unit_bundle(profile, credential_path="/run/easymount/credentials/public-1234.cred")
+        with tempfile.TemporaryDirectory() as tmp, patch("easymount.helper.require_root"), patch(
+            "easymount.helper.credential_path_for", return_value=Path(tmp, "public-1234.cred")
+        ), patch("easymount.helper.run", return_value=subprocess.CompletedProcess(["systemctl"], 0, "", "")) as run:
+            result = handle_prepare_credentials(Namespace(dry_run=False), {"profile": profile.to_dict(), "secret": "pw"})
+        self.assertEqual(result["credential_path"], str(Path(tmp, "public-1234.cred")))
+        run.assert_any_call(["systemctl", "disable", bundle.mount_unit_name], check=False)
+        run.assert_any_call(["systemctl", "reset-failed", bundle.mount_unit_name], check=False)
 
     def test_install_mount_activates_automount_unit_by_default(self) -> None:
         profile = self.profile()

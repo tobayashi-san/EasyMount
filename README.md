@@ -10,6 +10,8 @@ integration are still being refined.
 
 ## Screenshots
 
+**[Open the interactive light/dark slider &raquo;](https://tobayashi-san.github.io/EasyMount/)**
+
 ![EasyMount shares view in light mode](docs/images/shares-light.png)
 
 | Shares in dark mode | Settings | Add network mount |
@@ -97,9 +99,25 @@ profiles and saved secrets.
 
 EasyMount does not mount network shares directly from the GUI. The GUI asks a
 small host helper to validate profiles and create or remove systemd units. That
-helper runs through Polkit, so privileged changes require the normal desktop
-authorization prompt. SMB passwords are passed only when needed and are written
-to root-owned runtime credential files under `/run/easymount`.
+helper is exposed through a single Polkit action. SMB passwords are passed only
+when needed and are written to root-owned runtime credential files under
+`/run/easymount`.
+
+By default the shipped Polkit rule (`org.easymount.helper.rules`) grants this
+action to **active, local** desktop sessions without an extra password prompt.
+This is intentional: it lets the login agent restore "always mounted" shares
+automatically after a reboot without forcing the user to authenticate on every
+boot. Remote or inactive sessions fall back to the `auth_admin` defaults in the
+policy and must authenticate.
+
+If you prefer an authentication prompt for every privileged change, remove
+`/usr/share/polkit-1/rules.d/org.easymount.helper.rules`; the `auth_admin`
+defaults in the `.policy` file then apply (note: unattended automount on boot
+will then require interactive authentication and may not complete).
+
+The helper still enforces that a profile may only be created for the calling
+user (`PKEXEC_UID`) and only below that user's `~/Network` directory, and it
+rejects symlinked mount paths so privileged operations cannot escape that tree.
 
 Flatpak may show broad-permission warnings because EasyMount needs home access
 for mount paths, network access for share checks, Secret Service access for SMB

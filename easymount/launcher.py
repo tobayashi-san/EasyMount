@@ -4,7 +4,7 @@ import os
 import shutil
 from pathlib import Path
 
-from .constants import HELPER_COMMAND, HELPER_ENV, HOST_HELPER_CANDIDATES, HOST_HELPER_PATH, LEGACY_HELPER_ENV
+from .constants import HELPER_COMMAND, HELPER_ENV, HOST_HELPER_CANDIDATES, HOST_HELPER_PATH
 
 
 class HelperLaunchError(RuntimeError):
@@ -12,7 +12,7 @@ class HelperLaunchError(RuntimeError):
 
 
 def helper_executable() -> str:
-    configured = os.environ.get(HELPER_ENV) or os.environ.get(LEGACY_HELPER_ENV)
+    configured = os.environ.get(HELPER_ENV)
     if configured:
         return configured
     if is_flatpak():

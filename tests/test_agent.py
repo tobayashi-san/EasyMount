@@ -110,6 +110,52 @@ class AgentTests(unittest.TestCase):
             ],
         )
 
+    def test_agent_retries_saved_secret_lookup_after_login(self) -> None:
+        profile = self.authenticated_smb_profile(MountMode.ALWAYS)
+        ok = subprocess.CompletedProcess(["easymount-helper"], 0, stdout="", stderr="")
+        expected_payload = {"profile": profile.to_dict(), "secret": "pw"}
+        with patch("easymount.agent.ProfileStore") as store_cls, patch("easymount.agent.SecretServiceStore") as secret_cls, patch(
+            "easymount.agent.run_helper", return_value=ok
+        ) as run_helper, patch("easymount.agent.time.sleep") as sleep, patch(
+            "easymount.agent.SECRET_LOOKUP_ATTEMPTS", 3
+        ), patch(
+            "easymount.agent.SECRET_LOOKUP_DELAY_SECONDS", 0
+        ):
+            store_cls.return_value.load.return_value = [profile]
+            secret_cls.return_value.lookup.side_effect = [None, "pw"]
+
+            result = main()
+
+        self.assertEqual(result, 0)
+        self.assertEqual(secret_cls.return_value.lookup.call_count, 2)
+        sleep.assert_called_once_with(0)
+        self.assertEqual(
+            run_helper.call_args_list,
+            [
+                call("prepare-credentials", expected_payload),
+                call("mount-now", expected_payload),
+            ],
+        )
+
+    def test_agent_does_not_mount_when_saved_secret_stays_missing(self) -> None:
+        profile = self.authenticated_smb_profile(MountMode.ALWAYS)
+        with patch("easymount.agent.ProfileStore") as store_cls, patch("easymount.agent.SecretServiceStore") as secret_cls, patch(
+            "easymount.agent.run_helper"
+        ) as run_helper, patch("easymount.agent.time.sleep") as sleep, patch(
+            "easymount.agent.SECRET_LOOKUP_ATTEMPTS", 2
+        ), patch(
+            "easymount.agent.SECRET_LOOKUP_DELAY_SECONDS", 0
+        ):
+            store_cls.return_value.load.return_value = [profile]
+            secret_cls.return_value.lookup.return_value = None
+
+            result = main()
+
+        self.assertEqual(result, 1)
+        self.assertEqual(secret_cls.return_value.lookup.call_count, 2)
+        sleep.assert_called_once_with(0)
+        run_helper.assert_not_called()
+
     def test_agent_skips_disabled_profiles(self) -> None:
         profile = self.guest_smb_profile()
         profile.enabled = False

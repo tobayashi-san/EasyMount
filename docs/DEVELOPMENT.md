@@ -49,7 +49,8 @@ rm -rf build easymount.egg-info
 
 ## Source Layout
 
-- `easymount/app.py`: GTK GUI
+- `easymount/ui.py`: GTK GUI (windows, dialogs, theming)
+- `easymount/app.py`: pure helpers, theme options and GTK CSS
 - `easymount/helper.py`: privileged helper command implementation
 - `easymount/launcher.py`: local and Flatpak helper command launcher
 - `easymount/unit.py`: systemd unit generation

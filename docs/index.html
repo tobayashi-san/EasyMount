@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EasyMount &mdash; Screenshots</title>
+  <meta name="description" content="EasyMount: persistent SMB and NFS network mounts for Linux. Light vs dark screenshot sliders.">
+
+  <!-- img-comparison-slider web component -->
+  <link rel="stylesheet" href="https://unpkg.com/img-comparison-slider@8/dist/styles.css">
+  <script defer src="https://unpkg.com/img-comparison-slider@8/dist/index.js"></script>
+
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #181b22;
+      --border: rgba(255, 255, 255, 0.10);
+      --text: #eef1f5;
+      --dim: #aab2bf;
+      --accent: #3f9aa6;
+      --accent-strong: #52aeba;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f5f7fb;
+        --panel: #ffffff;
+        --border: rgba(15, 23, 42, 0.10);
+        --text: #1d2635;
+        --dim: #5d6878;
+        --accent: #16707a;
+        --accent-strong: #115a62;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .wrap { max-width: 880px; margin: 0 auto; padding: 56px 20px 80px; }
+
+    header { text-align: center; margin-bottom: 48px; }
+    .logo {
+      width: 64px; height: 64px; border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -1px;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0 0 8px; font-size: 2.1rem; letter-spacing: -0.5px; }
+    .tagline { margin: 0 auto; max-width: 560px; color: var(--dim); font-size: 1.05rem; }
+
+    .links { margin-top: 22px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; padding: 9px 18px; border-radius: 10px;
+      font-weight: 600; text-decoration: none; font-size: 0.95rem;
+      border: 1px solid var(--border); color: var(--text);
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn:hover { border-color: var(--accent); }
+
+    section { margin-top: 56px; }
+    h2 { font-size: 1.3rem; margin: 0 0 6px; }
+    .hint { margin: 0 0 18px; color: var(--dim); font-size: 0.95rem; }
+
+    .frame {
+      border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+      background: var(--panel); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    }
+    img-comparison-slider { width: 100%; display: block; }
+    img-comparison-slider img { width: 100%; display: block; }
+
+    img-comparison-slider {
+      --divider-width: 2px;
+      --divider-color: var(--accent);
+      --default-handle-opacity: 1;
+    }
+    .handle {
+      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
+      font-size: 16px; font-weight: 700;
+    }
+
+    .single .frame img { width: 100%; display: block; }
+
+    footer {
+      margin-top: 72px; text-align: center; color: var(--dim); font-size: 0.9rem;
+    }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">EM</div>
+      <h1>EasyMount</h1>
+      <p class="tagline">
+        Persistent SMB and NFS network mounts for Linux &mdash; no hand-edited
+        <code>fstab</code>. Drag the sliders to compare light and dark mode.
+      </p>
+      <div class="links">
+        <a class="btn primary" href="https://github.com/tobayashi-san/EasyMount">GitHub project</a>
+        <a class="btn" href="https://github.com/tobayashi-san/EasyMount/releases">Releases</a>
+      </div>
+    </header>
+
+    <section>
+      <h2>Shares</h2>
+      <p class="hint">The main view lists every mount with its live status. Drag to reveal dark mode.</p>
+      <div class="frame">
+        <img-comparison-slider>
+          <img slot="first" src="images/shares-light.png" alt="EasyMount shares view in light mode">
+          <img slot="second" src="images/shares-dark.png" alt="EasyMount shares view in dark mode">
+          <div slot="handle" class="handle">&#8596;</div>
+        </img-comparison-slider>
+      </div>
+    </section>
+
+    <section>
+      <h2>Add network mount</h2>
+      <p class="hint">Create an SMB or NFS mount from a single dialog. Drag to reveal dark mode.</p>
+      <div class="frame">
+        <img-comparison-slider>
+          <img slot="first" src="images/add-share-light.png" alt="EasyMount add network mount dialog in light mode">
+          <img slot="second" src="images/add-share-dark.png" alt="EasyMount add network mount dialog in dark mode">
+          <div slot="handle" class="handle">&#8596;</div>
+        </img-comparison-slider>
+      </div>
+    </section>
+
+    <section class="single">
+      <h2>Settings</h2>
+      <p class="hint">Theme, host helper and file-browser sidebar integration.</p>
+      <div class="frame">
+        <img src="images/settings-dark.png" alt="EasyMount settings page in dark mode">
+      </div>
+    </section>
+
+    <footer>
+      Built with GTK&nbsp;4 and PyGObject &middot;
+      <a href="https://github.com/tobayashi-san/EasyMount">tobayashi-san/EasyMount</a>
+    </footer>
+  </div>
+</body>
+</html>

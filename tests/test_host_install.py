@@ -15,13 +15,16 @@ class HostInstallTests(unittest.TestCase):
             self.assertTrue(Path(root, "pyproject.toml").exists())
             self.assertTrue(Path(root, "easymount", "helper.py").exists())
             self.assertTrue(Path(root, "packaging", "polkit", "org.easymount.helper.policy").exists())
+            self.assertTrue(Path(root, "packaging", "polkit", "org.easymount.helper.rules").exists())
             self.assertTrue(Path(root, "packaging", "systemd", "easymount-agent.service").exists())
             content = script.read_text(encoding="utf-8")
             self.assertIn('cp -R "${repo_dir}/easymount"', content)
             self.assertIn("PYTHONPATH=", content)
             self.assertNotIn("pip install", content)
+            self.assertIn("/usr/share/polkit-1/rules.d/org.easymount.helper.rules", content)
             self.assertIn("systemctl --global enable easymount-agent.service", content)
             uninstall = Path(root, "scripts", "uninstall-host-helper.sh").read_text(encoding="utf-8")
+            self.assertIn("/usr/share/polkit-1/rules.d/org.easymount.helper.rules", uninstall)
             self.assertIn("systemctl --global disable easymount-agent.service", uninstall)
 
     def test_flatpak_host_prefix_uses_flatpak_spawn(self) -> None:

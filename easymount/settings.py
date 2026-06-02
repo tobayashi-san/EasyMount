@@ -42,16 +42,22 @@ class SettingsStore:
     def __init__(self, config_dir: str | os.PathLike[str] | None = None) -> None:
         self.config_dir = Path(config_dir) if config_dir is not None else default_config_dir()
         self.path = self.config_dir / "settings.json"
-        self.legacy_path = None if config_dir is not None else legacy_config_dir() / "settings.json"
+        self._legacy_path = None if config_dir is not None else legacy_config_dir() / "settings.json"
 
     def load(self) -> AppSettings:
-        path = self.path
-        if not path.exists() and self.legacy_path is not None and self.legacy_path.exists():
-            path = self.legacy_path
-        if not path.exists():
+        if not self.path.exists():
+            self._migrate_legacy()
+        if not self.path.exists():
             return AppSettings()
-        with path.open("r", encoding="utf-8") as handle:
+        with self.path.open("r", encoding="utf-8") as handle:
             return AppSettings.from_dict(json.load(handle))
+
+    def _migrate_legacy(self) -> None:
+        """One-time copy of pre-rename ``easysmb`` settings into the new location."""
+        if self._legacy_path is None or not self._legacy_path.exists():
+            return
+        with self._legacy_path.open("r", encoding="utf-8") as handle:
+            self.save(AppSettings.from_dict(json.load(handle)))
 
     def save(self, settings: AppSettings) -> None:
         self.config_dir.mkdir(mode=0o700, parents=True, exist_ok=True)

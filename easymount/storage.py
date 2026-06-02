@@ -33,17 +33,26 @@ class ProfileStore:
     def __init__(self, config_dir: str | os.PathLike[str] | None = None) -> None:
         self.config_dir = Path(config_dir) if config_dir is not None else default_config_dir()
         self.path = self.config_dir / "profiles.json"
-        self.legacy_path = None if config_dir is not None else legacy_config_dir() / "profiles.json"
+        self._legacy_path = None if config_dir is not None else legacy_config_dir() / "profiles.json"
 
     def load(self) -> list[MountProfile]:
-        path = self.path
-        if not path.exists() and self.legacy_path is not None and self.legacy_path.exists():
-            path = self.legacy_path
-        if not path.exists():
+        if not self.path.exists():
+            self._migrate_legacy()
+        if not self.path.exists():
             return []
-        with path.open("r", encoding="utf-8") as handle:
+        with self.path.open("r", encoding="utf-8") as handle:
             raw = json.load(handle)
         return [MountProfile.from_dict(item) for item in raw.get("profiles", [])]
+
+    def _migrate_legacy(self) -> None:
+        """One-time copy of pre-rename ``easysmb`` profiles into the new location."""
+        if self._legacy_path is None or not self._legacy_path.exists():
+            return
+        self.config_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        with self._legacy_path.open("r", encoding="utf-8") as handle:
+            raw = json.load(handle)
+        profiles = [MountProfile.from_dict(item) for item in raw.get("profiles", [])]
+        self.save_all(profiles)
 
     def save_all(self, profiles: list[MountProfile]) -> None:
         self.config_dir.mkdir(mode=0o700, parents=True, exist_ok=True)

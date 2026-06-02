@@ -17,11 +17,15 @@ The native helper package should install:
 - `/usr/bin/easymount-helper`
 - `/usr/bin/easymount-agent`
 - `/usr/share/polkit-1/actions/org.easymount.helper.policy`
+- `/usr/share/polkit-1/rules.d/org.easymount.helper.rules`
 - `/usr/lib/systemd/user/easymount-agent.service`
 
 The helper path in the Polkit policy must match the installed libexec wrapper.
 The user agent should be enabled globally by the host-helper package so saved
 profiles can restore credentials and `Always mounted` shares after login.
+The Polkit rules file permits active local desktop sessions to call the
+EasyMount helper without a password prompt; the helper still validates the
+Polkit caller UID before accepting profile payloads.
 
 ## GUI-Driven Helper Install
 

@@ -3,7 +3,6 @@ import unittest
 from easymount.app import (
     format_helper_status,
     HelperResult,
-    light_gtk_theme_name,
     mount_mode_from_index,
     mount_mode_index,
     mount_mode_label,
@@ -41,12 +40,6 @@ class AppTests(unittest.TestCase):
         self.assertEqual(theme_index("bad"), 0)
         self.assertEqual(theme_from_index(1), "light")
         self.assertEqual(theme_from_index(99), "system")
-
-    def test_light_gtk_theme_name_strips_dark_variants(self) -> None:
-        self.assertEqual(light_gtk_theme_name("Breeze-Dark"), "Breeze")
-        self.assertEqual(light_gtk_theme_name("Adwaita-dark"), "Adwaita")
-        self.assertEqual(light_gtk_theme_name("Yaru:dark"), "Yaru")
-        self.assertIsNone(light_gtk_theme_name("Adwaita"))
 
     def test_mount_mode_mapping(self) -> None:
         self.assertEqual(mount_mode_index(MountMode.AUTOMOUNT), 0)

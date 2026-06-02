@@ -53,7 +53,9 @@ rm -f \
   "${prefix}/share/icons/hicolor/scalable/apps/org.easymount.EasyMount.svg" \
   "${prefix}/share/icons/hicolor/scalable/apps/org.easysmb.EasySMB.svg" \
   /usr/share/polkit-1/actions/org.easymount.helper.policy \
-  /usr/share/polkit-1/actions/org.easysmb.helper.policy
+  /usr/share/polkit-1/actions/org.easysmb.helper.policy \
+  /usr/share/polkit-1/rules.d/org.easymount.helper.rules \
+  /usr/share/polkit-1/rules.d/org.easysmb.helper.rules
 
 if command -v systemctl >/dev/null 2>&1; then
   systemctl daemon-reload >/dev/null 2>&1 || true

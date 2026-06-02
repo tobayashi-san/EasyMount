@@ -21,6 +21,7 @@ The script installs:
 - Python commands below `/usr/bin`
 - `/usr/libexec/easymount-helper`
 - Polkit policy under `/usr/share/polkit-1/actions`
+- Polkit rule under `/usr/share/polkit-1/rules.d`
 - desktop file, icon and AppStream metadata
 - `easymount-agent.service` as a systemd user service file
 - global enablement for the login restore agent

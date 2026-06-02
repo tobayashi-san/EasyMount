@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from typing import Iterable
+
+from .models import MountProfile, ProfileType
+from .unit import smb_requires_credentials
 
 APPLICATION_ATTR = "easymount"
 LEGACY_APPLICATION_ATTR = "easysmb"
@@ -43,10 +47,19 @@ class SecretServiceStore:
 
     def lookup(self, profile_id: str) -> str | None:
         self._require()
-        result = self._lookup(profile_id, APPLICATION_ATTR)
-        if result is not None:
-            return result
-        return self._lookup(profile_id, LEGACY_APPLICATION_ATTR)
+        return self._lookup(profile_id, APPLICATION_ATTR)
+
+    def migrate_legacy(self, profile_id: str, *, label: str) -> bool:
+        """Move a pre-rename ``easysmb`` secret to the ``easymount`` attribute once."""
+        self._require()
+        if self._lookup(profile_id, APPLICATION_ATTR) is not None:
+            return False
+        legacy = self._lookup(profile_id, LEGACY_APPLICATION_ATTR)
+        if legacy is None:
+            return False
+        self.store(profile_id, legacy, label=label)
+        self._clear(profile_id, LEGACY_APPLICATION_ATTR)
+        return True
 
     def _lookup(self, profile_id: str, application: str) -> str | None:
         result = subprocess.run(
@@ -70,8 +83,7 @@ class SecretServiceStore:
 
     def clear(self, profile_id: str) -> None:
         self._require()
-        for application in [APPLICATION_ATTR, LEGACY_APPLICATION_ATTR]:
-            self._clear(profile_id, application)
+        self._clear(profile_id, APPLICATION_ATTR)
 
     def _clear(self, profile_id: str, application: str) -> None:
         result = subprocess.run(
@@ -93,3 +105,16 @@ class SecretServiceStore:
     def _require(self) -> None:
         if not self.available():
             raise SecretStoreError("secret-tool is not installed")
+
+
+def migrate_legacy_secrets(profiles: Iterable[MountProfile], store: SecretServiceStore | None = None) -> None:
+    """Best-effort one-time migration of saved SMB passwords for known profiles."""
+    store = store or SecretServiceStore()
+    if not store.available():
+        return
+    for profile in profiles:
+        if profile.type is ProfileType.SMB and profile.password_saved and smb_requires_credentials(profile):
+            try:
+                store.migrate_legacy(profile.id, label=profile.display_name)
+            except SecretStoreError:
+                continue

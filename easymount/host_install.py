@@ -31,6 +31,15 @@ POLKIT_POLICY = """<?xml version="1.0" encoding="UTF-8"?>
 </policyconfig>
 """
 
+POLKIT_RULES = """polkit.addRule(function(action, subject) {
+    if (action.id == "org.easymount.helper.manage-mounts" &&
+        subject.local &&
+        subject.active) {
+        return polkit.Result.YES;
+    }
+});
+"""
+
 AGENT_SERVICE = """[Unit]
 Description=Restore EasyMount mounts after login
 After=graphical-session.target
@@ -73,7 +82,7 @@ policy_tmp="$(mktemp)"
 agent_tmp="$(mktemp)"
 trap 'rm -f "${policy_tmp}" "${agent_tmp}"' EXIT
 
-install -d "${prefix}/bin" "${prefix}/libexec" "${prefix}/lib/easymount" "${prefix}/lib/systemd/user" /usr/share/polkit-1/actions
+install -d "${prefix}/bin" "${prefix}/libexec" "${prefix}/lib/easymount" "${prefix}/lib/systemd/user" /usr/share/polkit-1/actions /usr/share/polkit-1/rules.d
 
 rm -rf "${prefix}/lib/easymount/easymount"
 cp -R "${repo_dir}/easymount" "${prefix}/lib/easymount/easymount"
@@ -102,6 +111,7 @@ chmod 0755 "${prefix}/libexec/easymount-helper"
 sed "s#/usr/libexec/easymount-helper#${prefix}/libexec/easymount-helper#g" \\
   "${repo_dir}/packaging/polkit/org.easymount.helper.policy" > "${policy_tmp}"
 install -m 0644 "${policy_tmp}" /usr/share/polkit-1/actions/org.easymount.helper.policy
+install -m 0644 "${repo_dir}/packaging/polkit/org.easymount.helper.rules" /usr/share/polkit-1/rules.d/org.easymount.helper.rules
 
 sed "s#/usr/bin/easymount-agent#${prefix}/bin/easymount-agent#g" \\
   "${repo_dir}/packaging/systemd/easymount-agent.service" > "${agent_tmp}"
@@ -109,7 +119,8 @@ install -m 0644 "${agent_tmp}" "${prefix}/lib/systemd/user/easymount-agent.servi
 
 rm -f \\
   "${prefix}/libexec/easysmb-helper" \\
-  /usr/share/polkit-1/actions/org.easysmb.helper.policy
+  /usr/share/polkit-1/actions/org.easysmb.helper.policy \\
+  /usr/share/polkit-1/rules.d/org.easysmb.helper.rules
 
 if command -v systemctl >/dev/null 2>&1; then
   systemctl daemon-reload >/dev/null 2>&1 || true
@@ -131,7 +142,9 @@ rm -f \\
   "${prefix}/libexec/easysmb-helper" \\
   "${prefix}/lib/systemd/user/easymount-agent.service" \\
   /usr/share/polkit-1/actions/org.easymount.helper.policy \\
-  /usr/share/polkit-1/actions/org.easysmb.helper.policy
+  /usr/share/polkit-1/actions/org.easysmb.helper.policy \\
+  /usr/share/polkit-1/rules.d/org.easymount.helper.rules \\
+  /usr/share/polkit-1/rules.d/org.easysmb.helper.rules
 rm -rf "${prefix}/lib/easymount"
 
 if command -v systemctl >/dev/null 2>&1; then
@@ -150,6 +163,23 @@ def cache_root() -> Path:
     return Path.home() / ".cache" / "easymount"
 
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def packaging_text(rel_path: str, fallback: str) -> str:
+    """Prefer the canonical file in the source tree; fall back to the embedded copy.
+
+    The embedded constants keep the helper installable from an installed package
+    or Flatpak sandbox where the ``packaging/`` tree is not shipped, while a
+    source/dev checkout stays the single source of truth.
+    """
+    candidate = REPO_ROOT / rel_path
+    try:
+        return candidate.read_text(encoding="utf-8")
+    except OSError:
+        return fallback
+
+
 def export_host_installer(root: str | os.PathLike[str] | None = None) -> Path:
     export_root = Path(root) if root is not None else cache_root() / "host-installer"
     if export_root.exists():
@@ -163,8 +193,18 @@ def export_host_installer(root: str | os.PathLike[str] | None = None) -> Path:
 
     write_file(export_root / "pyproject.toml", PYPROJECT)
     write_file(export_root / "README.md", f"# {APP_NAME} host helper export\n")
-    write_file(export_root / "packaging" / "polkit" / "org.easymount.helper.policy", POLKIT_POLICY)
-    write_file(export_root / "packaging" / "systemd" / "easymount-agent.service", AGENT_SERVICE)
+    write_file(
+        export_root / "packaging" / "polkit" / "org.easymount.helper.policy",
+        packaging_text("packaging/polkit/org.easymount.helper.policy", POLKIT_POLICY),
+    )
+    write_file(
+        export_root / "packaging" / "polkit" / "org.easymount.helper.rules",
+        packaging_text("packaging/polkit/org.easymount.helper.rules", POLKIT_RULES),
+    )
+    write_file(
+        export_root / "packaging" / "systemd" / "easymount-agent.service",
+        packaging_text("packaging/systemd/easymount-agent.service", AGENT_SERVICE),
+    )
 
     install_script = export_root / "scripts" / "install-host-helper.sh"
     write_file(install_script, INSTALL_SCRIPT)

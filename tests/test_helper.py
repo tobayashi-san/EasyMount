@@ -218,11 +218,56 @@ class HelperTests(unittest.TestCase):
         bundle = build_unit_bundle(profile, credential_path="/run/easymount/credentials/public-1234.cred")
         with tempfile.TemporaryDirectory() as tmp, patch("easymount.helper.require_root"), patch(
             "easymount.helper.credential_path_for", return_value=Path(tmp, "public-1234.cred")
-        ), patch("easymount.helper.run", return_value=subprocess.CompletedProcess(["systemctl"], 0, "", "")) as run:
+        ), patch("easymount.helper.ensure_mountpoint"), patch("easymount.helper.write_unit_files") as write_unit_files, patch(
+            "easymount.helper.run", return_value=subprocess.CompletedProcess(["systemctl"], 0, "", "")
+        ) as run, patch("easymount.helper.systemctl") as systemctl:
             result = handle_prepare_credentials(Namespace(dry_run=False), {"profile": profile.to_dict(), "secret": "pw"})
         self.assertEqual(result["credential_path"], str(Path(tmp, "public-1234.cred")))
+        write_unit_files.assert_called_once()
+        systemctl.assert_any_call("daemon-reload")
         run.assert_any_call(["systemctl", "disable", bundle.mount_unit_name], check=False)
         run.assert_any_call(["systemctl", "reset-failed", bundle.mount_unit_name], check=False)
+
+    def test_install_mount_does_not_enable_boot_automount_for_authenticated_smb(self) -> None:
+        profile = self.profile()
+        profile.username = "alice"
+        profile.password_saved = True
+        with tempfile.TemporaryDirectory() as tmp, patch("easymount.helper.require_root"), patch(
+            "easymount.helper.credential_path_for", return_value=Path(tmp, "public-1234.cred")
+        ), patch("easymount.helper.assert_dependencies"), patch("easymount.helper.ensure_mountpoint"), patch(
+            "easymount.helper.write_unit_files"
+        ), patch("easymount.helper.run", return_value=subprocess.CompletedProcess(["systemctl"], 0, "", "")) as run, patch(
+            "easymount.helper.systemctl"
+        ) as systemctl:
+            result = handle_install_mount(Namespace(dry_run=False), {"profile": profile.to_dict(), "secret": "pw"})
+        self.assertTrue(result["installed"])
+        run.assert_any_call(["systemctl", "disable", "--now", result["mount_unit_name"]], check=False)
+        run.assert_any_call(["systemctl", "disable", result["automount_unit_name"]], check=False)
+        run.assert_any_call(["systemctl", "reset-failed", result["automount_unit_name"]], check=False)
+        run.assert_any_call(["systemctl", "reset-failed", result["mount_unit_name"]], check=False)
+        systemctl.assert_any_call("start", result["automount_unit_name"])
+        self.assertNotIn(call("enable", "--now", result["automount_unit_name"]), systemctl.call_args_list)
+
+    def test_prepare_credentials_starts_automount_for_authenticated_smb(self) -> None:
+        profile = self.profile()
+        profile.username = "alice"
+        profile.password_saved = True
+        bundle = build_unit_bundle(profile, credential_path="/run/easymount/credentials/public-1234.cred")
+        with tempfile.TemporaryDirectory() as tmp, patch("easymount.helper.require_root"), patch(
+            "easymount.helper.credential_path_for", return_value=Path(tmp, "public-1234.cred")
+        ), patch("easymount.helper.ensure_mountpoint"), patch("easymount.helper.write_unit_files") as write_unit_files, patch(
+            "easymount.helper.run", return_value=subprocess.CompletedProcess(["systemctl"], 0, "", "")
+        ) as run, patch(
+            "easymount.helper.systemctl"
+        ) as systemctl:
+            result = handle_prepare_credentials(Namespace(dry_run=False), {"profile": profile.to_dict(), "secret": "pw"})
+        self.assertEqual(result["credential_path"], str(Path(tmp, "public-1234.cred")))
+        write_unit_files.assert_called_once()
+        systemctl.assert_any_call("daemon-reload")
+        run.assert_any_call(["systemctl", "disable", bundle.automount_unit_name], check=False)
+        run.assert_any_call(["systemctl", "reset-failed", bundle.automount_unit_name], check=False)
+        run.assert_any_call(["systemctl", "reset-failed", bundle.mount_unit_name], check=False)
+        systemctl.assert_any_call("start", bundle.automount_unit_name)
 
     def test_install_mount_activates_automount_unit_by_default(self) -> None:
         profile = self.profile()

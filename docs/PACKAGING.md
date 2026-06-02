@@ -22,7 +22,8 @@ The native helper package should install:
 
 The helper path in the Polkit policy must match the installed libexec wrapper.
 The user agent should be enabled globally by the host-helper package so saved
-profiles can restore credentials and `Always mounted` shares after login.
+profiles can restore runtime credentials, deferred authenticated automounts and
+`Always mounted` shares after login.
 The Polkit rules file permits active local desktop sessions to call the
 EasyMount helper without a password prompt; the helper still validates the
 Polkit caller UID before accepting profile payloads.

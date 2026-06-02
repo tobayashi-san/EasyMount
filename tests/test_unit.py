@@ -50,6 +50,21 @@ class UnitGenerationTests(unittest.TestCase):
         self.assertIn("guest", bundle.mount_unit)
         self.assertNotIn("credentials=", bundle.mount_unit)
 
+    def test_automount_unit_does_not_wait_for_network_online(self) -> None:
+        profile = MountProfile(
+            id="public-1234",
+            type=ProfileType.SMB,
+            display_name="Public",
+            server="nas.local",
+            remote_path="public",
+            mount_path=default_mount_path("Public"),
+            created_for_uid=os.getuid(),
+            created_for_gid=os.getgid(),
+        )
+        bundle = build_unit_bundle(profile)
+        self.assertIn("After=network-online.target", bundle.mount_unit)
+        self.assertNotIn("network-online.target", bundle.automount_unit)
+
     def test_nfs_v3_unit_contains_version_option(self) -> None:
         profile = MountProfile(
             id="nfs-1234",

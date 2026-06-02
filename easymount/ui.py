@@ -255,7 +255,7 @@ class ShareDialog(Gtk.Window):
             _form_row(
                 "Mount behavior",
                 self.mount_mode,
-                "Use access-based mounting for normal shares. Use always mounted for video editing, "
+                "Use systemd automount for normal shares. Use always mounted for video editing, "
                 "media libraries or indexers.",
             )
         )
@@ -510,7 +510,7 @@ class MainWindow(Gtk.ApplicationWindow):
         copy = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
         title = Gtk.Label(label="Network mounts", xalign=0)
         title.add_css_class("page-title")
-        subtitle = _hint("Shares mount automatically when opened. Use the actions to edit or remove a mount.")
+        subtitle = _hint("Shares mount automatically on access. Use the actions to edit or remove a mount.")
         copy.append(title)
         copy.append(subtitle)
         copy.set_hexpand(True)

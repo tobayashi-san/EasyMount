@@ -282,11 +282,11 @@
       <div class="term reveal">
         <div class="term-bar"><i></i><i></i><i></i><span>easymount &mdash; what happens under the hood</span></div>
 <pre><span class="c"># EasyMount writes systemd units instead of editing fstab</span>
-<span class="p">$</span> <span class="o">systemctl --user status home-you-Network-NAS.automount</span>
+<span class="p">$</span> <span class="o">systemctl status home-you-Network-NAS.automount</span>
   <span class="ok">●</span> home-you-Network-NAS.automount  <span class="c">- Automount for //nas/media</span>
      Loaded: loaded  Active: <span class="ok">active (waiting)</span>
      Where:  /home/you/Network/NAS
-<span class="c"># first access mounts it on demand, credentials from Secret Service</span>
+<span class="c"># after login the agent prepares SMB credentials; first access mounts on demand</span>
 <span class="p">$</span> <span class="o">ls ~/Network/NAS</span>   <span class="ok">→ mounted</span></pre>
       </div>
     </div>
@@ -313,7 +313,7 @@
         <div class="card reveal"><span class="num">03</span>
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></div>
           <h3>Survives reboots</h3>
-          <p>Generates systemd <code>.mount</code> and <code>.automount</code> units so shares come back automatically after login.</p>
+          <p>Generates systemd <code>.mount</code> and <code>.automount</code> units. Saved SMB credentials are restored after login before authenticated triggers start.</p>
         </div>
         <div class="card reveal"><span class="num">04</span>
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
@@ -384,12 +384,12 @@
       <div class="install-grid">
         <div class="code reveal">
           <header>AppImage <span class="badge">portable</span></header>
-<pre><span class="p">$</span> chmod +x EasyMount-0.1.0-x86_64.AppImage
-<span class="p">$</span> ./EasyMount-0.1.0-x86_64.AppImage</pre>
+<pre><span class="p">$</span> chmod +x EasyMount-0.1.1-x86_64.AppImage
+<span class="p">$</span> ./EasyMount-0.1.1-x86_64.AppImage</pre>
         </div>
         <div class="code reveal">
           <header>Flatpak <span class="badge">sandboxed</span></header>
-<pre><span class="p">$</span> flatpak install --user EasyMount-0.1.0-x86_64.flatpak
+<pre><span class="p">$</span> flatpak install --user EasyMount-0.1.1-x86_64.flatpak
 <span class="p">$</span> flatpak run org.easymount.EasyMount</pre>
         </div>
       </div>

@@ -30,9 +30,11 @@ host helper.
 
 `automount`:
 
-- enables the systemd `.automount` unit
-- mounts the share on first access
+- uses a systemd `.automount` unit as the access trigger
+- mounts the share on first access through the paired `.mount` unit
 - good default for normal file browsing
+- for authenticated SMB shares, the trigger is started after login once the
+  runtime credential file has been recreated
 
 `always`:
 
@@ -51,6 +53,11 @@ units reference root-readable credential files under:
 
 That directory is runtime-only. The GUI and optional user agent recreate
 credential files after login when Secret Service is available.
+
+Authenticated SMB units are not enabled blindly at boot, because `/run` is empty
+after reboot. The login agent writes the credential file first, refreshes the
+systemd unit files, resets previous failures, and then starts the deferred
+automount or mount unit.
 
 ## Sandboxed GUI
 

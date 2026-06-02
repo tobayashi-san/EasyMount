@@ -405,7 +405,7 @@ def status_css_class(text: str) -> str:
 
 THEME_OPTIONS = ["System", "Light", "Dark"]
 THEME_VALUES = ["system", "light", "dark"]
-MOUNT_MODE_OPTIONS = ["Mounts when opened", "Always mounted"]
+MOUNT_MODE_OPTIONS = ["Mount on access", "Always mounted"]
 MOUNT_MODE_VALUES = [MountMode.AUTOMOUNT, MountMode.ALWAYS]
 
 
@@ -431,7 +431,7 @@ def mount_mode_from_index(index: int) -> MountMode:
 
 
 def mount_mode_label(mode: MountMode) -> str:
-    return "Always mounted" if mode == MountMode.ALWAYS else "Mounts when opened"
+    return "Always mounted" if mode == MountMode.ALWAYS else "Mount on access"
 
 
 def format_helper_status(payload: dict, *, secret_tool_available: bool) -> str:

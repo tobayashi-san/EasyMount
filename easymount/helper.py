@@ -163,7 +163,11 @@ def handle_prepare_credentials(args: argparse.Namespace, payload: dict[str, Any]
     secret = read_secret(payload, required=profile.password_saved)
     if not args.dry_run:
         write_credentials_file(profile, credential_path, secret)
-        disable_boot_mount_for_runtime_credentials(profile)
+        bundle = build_unit_bundle(profile, credential_path=str(credential_path))
+        ensure_mountpoint(profile)
+        write_unit_files(bundle)
+        systemctl("daemon-reload")
+        activate_runtime_credentials_profile(profile)
     return {"credential_path": str(credential_path)}
 
 
@@ -474,28 +478,44 @@ def write_unit_files(bundle: UnitBundle) -> None:
 def activate_profile_units(profile: MountProfile, bundle: UnitBundle) -> None:
     if profile.mount_mode == MountMode.ALWAYS:
         run(["systemctl", "disable", "--now", bundle.automount_unit_name], check=False)
-        if should_defer_mount_until_login(profile):
+        if uses_runtime_credentials(profile):
             disable_mount_unit_on_boot(bundle.mount_unit_name)
             systemctl("start", bundle.mount_unit_name)
             return
         systemctl("enable", "--now", bundle.mount_unit_name)
         return
     run(["systemctl", "disable", "--now", bundle.mount_unit_name], check=False)
+    if uses_runtime_credentials(profile):
+        disable_automount_unit_on_boot(bundle.automount_unit_name)
+        systemctl("start", bundle.automount_unit_name)
+        return
     systemctl("enable", "--now", bundle.automount_unit_name)
 
 
-def should_defer_mount_until_login(profile: MountProfile) -> bool:
-    return profile.mount_mode == MountMode.ALWAYS and profile.type is ProfileType.SMB and smb_requires_credentials(profile)
+def uses_runtime_credentials(profile: MountProfile) -> bool:
+    return profile.type is ProfileType.SMB and smb_requires_credentials(profile)
 
 
-def disable_boot_mount_for_runtime_credentials(profile: MountProfile) -> None:
-    if should_defer_mount_until_login(profile):
+def activate_runtime_credentials_profile(profile: MountProfile) -> None:
+    if not uses_runtime_credentials(profile):
+        return
+    if profile.mount_mode == MountMode.ALWAYS:
         disable_mount_unit_on_boot(unit_name_for_path(profile.mount_path, "mount"))
+        return
+    unit_name = unit_name_for_path(profile.mount_path, "automount")
+    disable_automount_unit_on_boot(unit_name)
+    systemctl("start", unit_name)
 
 
 def disable_mount_unit_on_boot(unit_name: str) -> None:
     run(["systemctl", "disable", unit_name], check=False)
     run(["systemctl", "reset-failed", unit_name], check=False)
+
+
+def disable_automount_unit_on_boot(unit_name: str) -> None:
+    run(["systemctl", "disable", unit_name], check=False)
+    run(["systemctl", "reset-failed", unit_name], check=False)
+    run(["systemctl", "reset-failed", unit_name.replace(".automount", ".mount")], check=False)
 
 
 def unit_path(unit_name: str) -> Path:

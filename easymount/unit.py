@@ -119,8 +119,6 @@ def build_unit_bundle(profile: MountProfile, *, credential_path: str | None = No
             "[Unit]",
             f"Description=EasyMount automount for {profile.display_name}",
             "Documentation=https://github.com/tobayashi-san/EasyMount",
-            "Wants=network-online.target",
-            "After=network-online.target",
             "",
             "[Automount]",
             f"Where={profile.mount_path}",

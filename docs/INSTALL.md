@@ -65,8 +65,11 @@ python -m easymount.app
 ## Login Restore Agent
 
 The installer globally enables `easymount-agent.service`. After the next login it
-prepares saved SMB credentials again and starts every enabled profile whose mount
-behavior is `Always mounted`, so configured mounts come back after a reboot.
+prepares saved SMB credentials again. For authenticated SMB shares, the agent
+starts the deferred systemd automount trigger only after the runtime credential
+file exists; for `Always mounted` profiles, it also starts the mount after
+login. This avoids boot-time mount attempts against missing `/run` credential
+files.
 
 For manual testing in the current user session:
 

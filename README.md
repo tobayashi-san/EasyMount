@@ -18,7 +18,7 @@ More views, plus an interactive light/dark comparison, are on the
 ## Features
 
 - Add, edit and delete SMB and NFS mounts from a GUI
-- Choose per share whether it mounts on access or stays mounted
+- Choose per share whether systemd mounts it on access or keeps it mounted
 - Persist mounts across reboots through systemd `.mount` and `.automount` units
 - Store SMB passwords through `secret-tool` instead of writing them to unit files
 - Check host requirements from the Settings page
@@ -33,14 +33,14 @@ Download the latest files from the
 AppImage:
 
 ```sh
-chmod +x EasyMount-0.1.0-x86_64.AppImage
-./EasyMount-0.1.0-x86_64.AppImage
+chmod +x EasyMount-0.1.1-x86_64.AppImage
+./EasyMount-0.1.1-x86_64.AppImage
 ```
 
 Flatpak bundle:
 
 ```sh
-flatpak install --user EasyMount-0.1.0-x86_64.flatpak
+flatpak install --user EasyMount-0.1.1-x86_64.flatpak
 flatpak run org.easymount.EasyMount
 ```
 
@@ -102,14 +102,15 @@ when needed and are written to root-owned runtime credential files under
 
 By default the shipped Polkit rule (`org.easymount.helper.rules`) grants this
 action to **active, local** desktop sessions without an extra password prompt.
-This is intentional: it lets the login agent restore "always mounted" shares
-automatically after a reboot without forcing the user to authenticate on every
-boot. Remote or inactive sessions fall back to the `auth_admin` defaults in the
-policy and must authenticate.
+This is intentional: it lets the login agent restore saved SMB credentials,
+start deferred authenticated automounts and restore "always mounted" shares
+after login without forcing the user to authenticate on every boot. Remote or
+inactive sessions fall back to the `auth_admin` defaults in the policy and must
+authenticate.
 
 If you prefer an authentication prompt for every privileged change, remove
 `/usr/share/polkit-1/rules.d/org.easymount.helper.rules`; the `auth_admin`
-defaults in the `.policy` file then apply (note: unattended automount on boot
+defaults in the `.policy` file then apply (note: unattended post-login restore
 will then require interactive authentication and may not complete).
 
 The helper still enforces that a profile may only be created for the calling
@@ -122,7 +123,7 @@ passwords and host access to install or call the helper.
 
 ## Project Status
 
-EasyMount is version `0.1.0`. Treat it as a test release and keep backups of
+EasyMount is version `0.1.1`. Treat it as a test release and keep backups of
 important mount configuration while trying it. Bug reports and reproducible
 mount errors are welcome in
 [GitHub Issues](https://github.com/tobayashi-san/EasyMount/issues).

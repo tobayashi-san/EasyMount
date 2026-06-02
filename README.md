@@ -10,13 +10,10 @@ integration are still being refined.
 
 ## Screenshots
 
-**[Open the interactive light/dark slider &raquo;](https://tobayashi-san.github.io/EasyMount/)**
-
 ![EasyMount shares view in light mode](docs/images/shares-light.png)
 
-| Shares in dark mode | Settings | Add network mount |
-| --- | --- | --- |
-| ![EasyMount shares view in dark mode](docs/images/shares-dark.png) | ![EasyMount settings in dark mode](docs/images/settings-dark.png) | ![EasyMount add network mount dialog](docs/images/add-share-dark.png) |
+More views, plus an interactive light/dark comparison, are on the
+[project page](https://tobayashi-san.github.io/EasyMount/).
 
 ## Features
 

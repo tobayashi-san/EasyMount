@@ -3,150 +3,432 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EasyMount &mdash; Screenshots</title>
-  <meta name="description" content="EasyMount: persistent SMB and NFS network mounts for Linux. Light vs dark screenshot sliders.">
+  <title>EasyMount &mdash; Persistent SMB &amp; NFS mounts for Linux</title>
+  <meta name="description" content="EasyMount sets up persistent SMB and NFS network mounts on Linux through systemd units, without hand-editing fstab. GTK 4 desktop app.">
 
-  <!-- img-comparison-slider web component -->
+  <meta property="og:title" content="EasyMount">
+  <meta property="og:description" content="Persistent SMB and NFS network mounts for Linux, without hand-editing fstab.">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="https://unpkg.com/img-comparison-slider@8/dist/styles.css">
   <script defer src="https://unpkg.com/img-comparison-slider@8/dist/index.js"></script>
 
   <style>
     :root {
-      --bg: #0f1115;
-      --panel: #181b22;
-      --border: rgba(255, 255, 255, 0.10);
-      --text: #eef1f5;
-      --dim: #aab2bf;
-      --accent: #3f9aa6;
-      --accent-strong: #52aeba;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f5f7fb;
-        --panel: #ffffff;
-        --border: rgba(15, 23, 42, 0.10);
-        --text: #1d2635;
-        --dim: #5d6878;
-        --accent: #16707a;
-        --accent-strong: #115a62;
-      }
+      --bg:        #0b0e11;
+      --bg-2:      #11151a;
+      --panel:     #141a21;
+      --panel-2:   #1a212a;
+      --line:      rgba(255,255,255,0.08);
+      --line-2:    rgba(255,255,255,0.14);
+      --text:      #e7edf3;
+      --dim:       #97a3b2;
+      --faint:     #66717f;
+      --teal:      #3f9aa6;
+      --teal-2:    #52aeba;
+      --teal-deep: #16707a;
+      --amber:     #c9a227;
+      --radius:    14px;
+      --maxw:      1080px;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --display: "Bricolage Grotesque", var(--sans);
     }
 
     * { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.55;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    .wrap { max-width: 880px; margin: 0 auto; padding: 56px 20px 80px; }
-
-    header { text-align: center; margin-bottom: 48px; }
-    .logo {
-      width: 64px; height: 64px; border-radius: 16px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #fff; font-size: 30px; font-weight: 800; letter-spacing: -1px;
-      margin-bottom: 18px;
+    /* subtle grid + glow atmosphere */
+    body::before {
+      content: "";
+      position: fixed; inset: 0; z-index: -2;
+      background:
+        radial-gradient(900px 500px at 78% -8%, rgba(63,154,166,0.16), transparent 60%),
+        radial-gradient(700px 500px at 8% 8%, rgba(22,112,122,0.10), transparent 55%);
+      pointer-events: none;
     }
-    h1 { margin: 0 0 8px; font-size: 2.1rem; letter-spacing: -0.5px; }
-    .tagline { margin: 0 auto; max-width: 560px; color: var(--dim); font-size: 1.05rem; }
+    body::after {
+      content: "";
+      position: fixed; inset: 0; z-index: -1; opacity: 0.5;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+      pointer-events: none;
+    }
 
-    .links { margin-top: 22px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+    .mono { font-family: var(--mono); }
+    .accent { color: var(--teal-2); }
+
+    /* ---------- nav ---------- */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(12px);
+      background: rgba(11,14,17,0.72);
+      border-bottom: 1px solid var(--line);
+    }
+    nav .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-family: var(--display); font-weight: 700; font-size: 1.12rem; }
+    .glyph {
+      width: 30px; height: 30px; border-radius: 8px; flex: none;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--teal), var(--teal-deep));
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset, 0 6px 16px rgba(22,112,122,0.4);
+      color: #051014; font-weight: 800; font-size: 0.74rem; letter-spacing: -0.5px;
+    }
+    .nav-links { display: flex; gap: 26px; margin-left: auto; font-size: 0.93rem; color: var(--dim); }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      font-size: 0.9rem; font-weight: 600; padding: 8px 15px; border-radius: 9px;
+      border: 1px solid var(--line-2); color: var(--text);
+    }
+    .nav-cta:hover { border-color: var(--teal); background: rgba(63,154,166,0.08); }
+    @media (max-width: 720px) { .nav-links { display: none; } }
+
+    /* ---------- hero ---------- */
+    .hero { padding: 96px 0 40px; position: relative; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em;
+      color: var(--teal-2); text-transform: uppercase;
+      padding: 6px 13px; border: 1px solid var(--line-2); border-radius: 999px;
+      background: rgba(63,154,166,0.06);
+    }
+    .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal-2); box-shadow: 0 0 10px var(--teal-2); }
+    h1 {
+      font-family: var(--display);
+      font-weight: 700; letter-spacing: -1.4px; line-height: 1.02;
+      font-size: clamp(2.5rem, 6.5vw, 4.6rem);
+      margin: 26px 0 0; max-width: 16ch;
+    }
+    h1 .grad {
+      background: linear-gradient(100deg, var(--teal-2), var(--teal-deep) 90%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .lede { margin: 24px 0 0; max-width: 56ch; font-size: 1.16rem; color: var(--dim); }
+    .lede code { font-family: var(--mono); color: var(--text); background: var(--panel-2); padding: 1px 7px; border-radius: 6px; font-size: 0.86em; }
+
+    .cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 36px; }
     .btn {
-      display: inline-block; padding: 9px 18px; border-radius: 10px;
-      font-weight: 600; text-decoration: none; font-size: 0.95rem;
-      border: 1px solid var(--border); color: var(--text);
+      display: inline-flex; align-items: center; gap: 9px;
+      font-weight: 600; font-size: 0.98rem; padding: 12px 22px; border-radius: 11px;
+      border: 1px solid transparent; transition: transform .12s ease, box-shadow .12s ease;
     }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn:hover { border-color: var(--accent); }
+    .btn:hover { transform: translateY(-2px); }
+    .btn.primary { background: linear-gradient(135deg, var(--teal), var(--teal-deep)); color: #04130f; box-shadow: 0 10px 30px rgba(22,112,122,0.35); }
+    .btn.ghost { border-color: var(--line-2); color: var(--text); }
+    .btn.ghost:hover { border-color: var(--teal); }
+    .btn svg { width: 18px; height: 18px; }
 
-    section { margin-top: 56px; }
-    h2 { font-size: 1.3rem; margin: 0 0 6px; }
-    .hint { margin: 0 0 18px; color: var(--dim); font-size: 0.95rem; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 34px; color: var(--faint); font-size: 0.85rem; font-family: var(--mono); }
+    .meta-row span { display: inline-flex; align-items: center; gap: 7px; }
+    .meta-row b { color: var(--teal-2); font-weight: 600; }
 
+    /* hero terminal */
+    .term {
+      margin-top: 64px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      background: linear-gradient(180deg, var(--panel), var(--bg-2));
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    }
+    .term-bar { display: flex; align-items: center; gap: 8px; padding: 13px 16px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.02); }
+    .term-bar i { width: 11px; height: 11px; border-radius: 50%; background: #2b333d; display: inline-block; }
+    .term-bar i:nth-child(1){ background:#e06c5b;} .term-bar i:nth-child(2){ background:#d9a441;} .term-bar i:nth-child(3){ background:#4fae6b;}
+    .term-bar span { margin-left: 10px; font-family: var(--mono); font-size: 0.8rem; color: var(--faint); }
+    .term pre { margin: 0; padding: 22px 22px 26px; font-family: var(--mono); font-size: 0.9rem; line-height: 1.85; color: var(--dim); overflow-x: auto; }
+    .term .c { color: var(--faint); }
+    .term .p { color: var(--teal-2); }
+    .term .o { color: #cfd8e0; }
+    .term .ok { color: #5bbd77; }
+
+    /* ---------- section frame ---------- */
+    section.block { padding: 84px 0; border-top: 1px solid var(--line); }
+    .sec-head { max-width: 60ch; margin-bottom: 44px; }
+    .kicker { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-2); }
+    h2 { font-family: var(--display); font-weight: 700; letter-spacing: -0.8px; font-size: clamp(1.7rem, 3.6vw, 2.5rem); margin: 14px 0 0; }
+    .sec-head p { color: var(--dim); font-size: 1.08rem; margin: 14px 0 0; }
+
+    /* ---------- features ---------- */
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--panel), rgba(20,26,33,0.4));
+      padding: 26px; position: relative; overflow: hidden;
+      transition: border-color .18s ease, transform .18s ease;
+    }
+    .card:hover { border-color: var(--line-2); transform: translateY(-3px); }
+    .card .ico {
+      width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center;
+      background: rgba(63,154,166,0.12); border: 1px solid rgba(63,154,166,0.22);
+      color: var(--teal-2); margin-bottom: 18px;
+    }
+    .card .ico svg { width: 21px; height: 21px; }
+    .card h3 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 600; }
+    .card p { margin: 0; color: var(--dim); font-size: 0.95rem; }
+    .card .num { position: absolute; top: 16px; right: 18px; font-family: var(--mono); font-size: 0.74rem; color: var(--faint); }
+
+    /* ---------- screenshots / sliders ---------- */
+    .shot { margin-top: 30px; }
+    .shot + .shot { margin-top: 30px; }
+    .shot-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+    .shot-head h3 { margin: 0; font-size: 1.12rem; font-weight: 600; }
+    .shot-head .tag { font-family: var(--mono); font-size: 0.76rem; color: var(--faint); }
     .frame {
-      border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
-      background: var(--panel); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+      border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      background: var(--panel); box-shadow: 0 22px 60px rgba(0,0,0,0.45);
     }
-    img-comparison-slider { width: 100%; display: block; }
+    img-comparison-slider { width: 100%; display: block; --divider-width: 2px; --divider-color: var(--teal-2); --default-handle-opacity: 1; }
     img-comparison-slider img { width: 100%; display: block; }
-
-    img-comparison-slider {
-      --divider-width: 2px;
-      --divider-color: var(--accent);
-      --default-handle-opacity: 1;
-    }
     .handle {
-      display: flex; align-items: center; justify-content: center;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--accent); color: #fff;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
-      font-size: 16px; font-weight: 700;
+      display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
+      background: var(--teal-2); color: #04130f; box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      border: 2px solid rgba(255,255,255,0.7); font-size: 18px; font-weight: 800;
     }
+    .frame.single img { width: 100%; display: block; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+    @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
 
-    .single .frame img { width: 100%; display: block; }
-
-    footer {
-      margin-top: 72px; text-align: center; color: var(--dim); font-size: 0.9rem;
+    /* ---------- install ---------- */
+    .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .install-grid { grid-template-columns: 1fr; } }
+    .code {
+      border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--bg-2);
     }
-    footer a { color: var(--accent); }
+    .code header { display: flex; align-items: center; gap: 9px; padding: 12px 16px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.82rem; color: var(--dim); }
+    .code header .badge { margin-left: auto; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--teal-2); border: 1px solid rgba(63,154,166,0.3); border-radius: 6px; padding: 2px 8px; }
+    .code pre { margin: 0; padding: 18px 16px; font-family: var(--mono); font-size: 0.86rem; line-height: 1.8; color: var(--dim); overflow-x: auto; }
+    .code pre .p { color: var(--teal-2); }
+    .note { margin-top: 22px; color: var(--dim); font-size: 0.95rem; border-left: 2px solid var(--teal); padding-left: 16px; }
+    .note code { font-family: var(--mono); color: var(--text); }
+
+    .req { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .req span { font-family: var(--mono); font-size: 0.82rem; color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; background: var(--panel); }
+
+    /* ---------- cta band ---------- */
+    .band { border-top: 1px solid var(--line); padding: 90px 0; text-align: center; background: radial-gradient(700px 300px at 50% 0%, rgba(63,154,166,0.12), transparent 70%); }
+    .band h2 { max-width: 22ch; margin: 0 auto; }
+    .band p { color: var(--dim); margin: 16px auto 30px; max-width: 50ch; }
+
+    /* ---------- footer ---------- */
+    footer { border-top: 1px solid var(--line); padding: 40px 0; color: var(--faint); font-size: 0.88rem; }
+    footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; }
+    footer a { color: var(--dim); }
+    footer a:hover { color: var(--teal-2); }
+
+    /* reveal */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo">EM</div>
-      <h1>EasyMount</h1>
-      <p class="tagline">
-        Persistent SMB and NFS network mounts for Linux &mdash; no hand-edited
-        <code>fstab</code>. Drag the sliders to compare light and dark mode.
+
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="#top"><span class="glyph">EM</span> EasyMount</a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#screens">Screenshots</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/tobayashi-san/EasyMount">GitHub</a>
+      </div>
+      <a class="nav-cta" href="https://github.com/tobayashi-san/EasyMount/releases">Download</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="wrap">
+      <span class="eyebrow"><span class="dot"></span> GTK&nbsp;4 &middot; systemd &middot; Linux</span>
+      <h1>Network shares that <span class="grad">just mount.</span></h1>
+      <p class="lede">
+        EasyMount sets up persistent <b class="accent">SMB</b> and <b class="accent">NFS</b> mounts
+        through systemd units &mdash; no hand-edited <code>fstab</code>, no copy-pasted credentials.
+        Profiles live in your user config, passwords stay in Secret Service.
       </p>
-      <div class="links">
-        <a class="btn primary" href="https://github.com/tobayashi-san/EasyMount">GitHub project</a>
-        <a class="btn" href="https://github.com/tobayashi-san/EasyMount/releases">Releases</a>
+      <div class="cta-row">
+        <a class="btn primary" href="https://github.com/tobayashi-san/EasyMount/releases">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+          Download release
+        </a>
+        <a class="btn ghost" href="https://github.com/tobayashi-san/EasyMount">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 016 0C17.3 5 18.3 5.3 18.3 5.3c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+          View source
+        </a>
       </div>
-    </header>
-
-    <section>
-      <h2>Shares</h2>
-      <p class="hint">The main view lists every mount with its live status. Drag to reveal dark mode.</p>
-      <div class="frame">
-        <img-comparison-slider>
-          <img slot="first" src="images/shares-light.png" alt="EasyMount shares view in light mode">
-          <img slot="second" src="images/shares-dark.png" alt="EasyMount shares view in dark mode">
-          <div slot="handle" class="handle">&#8596;</div>
-        </img-comparison-slider>
+      <div class="meta-row">
+        <span><b>2</b> protocols &mdash; SMB &amp; NFS</span>
+        <span><b>0</b> fstab edits</span>
+        <span><b>~/Network</b> mount root</span>
       </div>
-    </section>
 
-    <section>
-      <h2>Add network mount</h2>
-      <p class="hint">Create an SMB or NFS mount from a single dialog. Drag to reveal dark mode.</p>
-      <div class="frame">
-        <img-comparison-slider>
-          <img slot="first" src="images/add-share-light.png" alt="EasyMount add network mount dialog in light mode">
-          <img slot="second" src="images/add-share-dark.png" alt="EasyMount add network mount dialog in dark mode">
-          <div slot="handle" class="handle">&#8596;</div>
-        </img-comparison-slider>
+      <div class="term reveal">
+        <div class="term-bar"><i></i><i></i><i></i><span>easymount &mdash; what happens under the hood</span></div>
+<pre><span class="c"># EasyMount writes systemd units instead of editing fstab</span>
+<span class="p">$</span> <span class="o">systemctl --user status home-you-Network-NAS.automount</span>
+  <span class="ok">●</span> home-you-Network-NAS.automount  <span class="c">- Automount for //nas/media</span>
+     Loaded: loaded  Active: <span class="ok">active (waiting)</span>
+     Where:  /home/you/Network/NAS
+<span class="c"># first access mounts it on demand, credentials from Secret Service</span>
+<span class="p">$</span> <span class="o">ls ~/Network/NAS</span>   <span class="ok">→ mounted</span></pre>
       </div>
-    </section>
+    </div>
+  </header>
 
-    <section class="single">
-      <h2>Settings</h2>
-      <p class="hint">Theme, host helper and file-browser sidebar integration.</p>
-      <div class="frame">
-        <img src="images/settings-dark.png" alt="EasyMount settings page in dark mode">
+  <section class="block" id="features">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="kicker">Why EasyMount</div>
+        <h2>Mount management without the footguns</h2>
+        <p>A small GTK&nbsp;4 app drives a Polkit-protected helper. You get a clean GUI; systemd does the mounting.</p>
       </div>
-    </section>
+      <div class="grid">
+        <div class="card reveal"><span class="num">01</span>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></div>
+          <h3>SMB &amp; NFS from one GUI</h3>
+          <p>Add, edit and delete Windows/Samba shares and Linux NFS exports without touching a config file.</p>
+        </div>
+        <div class="card reveal"><span class="num">02</span>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Per-share mount behavior</h3>
+          <p>Mount on first access for casual browsing, or keep it always mounted for video editing and indexers.</p>
+        </div>
+        <div class="card reveal"><span class="num">03</span>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></div>
+          <h3>Survives reboots</h3>
+          <p>Generates systemd <code>.mount</code> and <code>.automount</code> units so shares come back automatically after login.</p>
+        </div>
+        <div class="card reveal"><span class="num">04</span>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+          <h3>Passwords in Secret Service</h3>
+          <p>SMB credentials go through <code>secret-tool</code> instead of being written into plain-text unit files.</p>
+        </div>
+        <div class="card reveal"><span class="num">05</span>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+          <h3>Host requirement checks</h3>
+          <p>Settings verifies the helper, systemd, SMB/NFS mount tools and secret storage before you hit problems.</p>
+        </div>
+        <div class="card reveal"><span class="num">06</span>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></div>
+          <h3>File-browser sidebar</h3>
+          <p>Optional bookmarks for GNOME Files, GTK pickers and KDE Places point straight at your mounts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <footer>
-      Built with GTK&nbsp;4 and PyGObject &middot;
-      <a href="https://github.com/tobayashi-san/EasyMount">tobayashi-san/EasyMount</a>
-    </footer>
-  </div>
+  <section class="block" id="screens">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="kicker">See it in motion</div>
+        <h2>Light and dark, side by side</h2>
+        <p>EasyMount ships System, Light and Dark themes. Drag the handle to compare the same view in both.</p>
+      </div>
+
+      <div class="shot reveal">
+        <div class="shot-head"><h3>Shares overview</h3><span class="tag">drag to compare &mdash; light / dark</span></div>
+        <div class="frame">
+          <img-comparison-slider>
+            <img slot="first" src="images/shares-light.png" alt="EasyMount shares view in light mode" loading="lazy">
+            <img slot="second" src="images/shares-dark.png" alt="EasyMount shares view in dark mode" loading="lazy">
+            <div slot="handle" class="handle">&#8596;</div>
+          </img-comparison-slider>
+        </div>
+      </div>
+
+      <div class="shot reveal">
+        <div class="shot-head"><h3>Add a network mount</h3><span class="tag">drag to compare &mdash; light / dark</span></div>
+        <div class="frame">
+          <img-comparison-slider>
+            <img slot="first" src="images/add-share-light.png" alt="EasyMount add network mount dialog in light mode" loading="lazy">
+            <img slot="second" src="images/add-share-dark.png" alt="EasyMount add network mount dialog in dark mode" loading="lazy">
+            <div slot="handle" class="handle">&#8596;</div>
+          </img-comparison-slider>
+        </div>
+      </div>
+
+      <div class="shot reveal">
+        <div class="shot-head"><h3>Settings</h3><span class="tag">theme, host helper &amp; sidebar</span></div>
+        <div class="frame single">
+          <img src="images/settings-dark.png" alt="EasyMount settings page in dark mode" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="install">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="kicker">Get started</div>
+        <h2>Up and running in two commands</h2>
+        <p>Grab a build from the releases page. On first launch, open <code>Settings &rarr; Host helper</code> and run <code>Install / Update Helper</code>.</p>
+      </div>
+
+      <div class="install-grid">
+        <div class="code reveal">
+          <header>AppImage <span class="badge">portable</span></header>
+<pre><span class="p">$</span> chmod +x EasyMount-0.1.0-x86_64.AppImage
+<span class="p">$</span> ./EasyMount-0.1.0-x86_64.AppImage</pre>
+        </div>
+        <div class="code reveal">
+          <header>Flatpak <span class="badge">sandboxed</span></header>
+<pre><span class="p">$</span> flatpak install --user EasyMount-0.1.0-x86_64.flatpak
+<span class="p">$</span> flatpak run org.easymount.EasyMount</pre>
+        </div>
+      </div>
+
+      <p class="note">
+        The helper is required because sandboxed apps and normal user processes can&rsquo;t write
+        systemd mount units directly. It is installed once and protected by Polkit.
+      </p>
+
+      <div class="req">
+        <span>Python 3.10+</span><span>GTK 4 / PyGObject</span><span>secret-tool</span>
+        <span>polkit / pkexec</span><span>systemd</span><span>cifs-utils</span><span>nfs-utils</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap reveal">
+      <h2>Stop hand-editing fstab.</h2>
+      <p>EasyMount is an early release &mdash; the core mount flow works today on systemd-based distributions.</p>
+      <div class="cta-row" style="justify-content:center;">
+        <a class="btn primary" href="https://github.com/tobayashi-san/EasyMount/releases">Download release</a>
+        <a class="btn ghost" href="https://github.com/tobayashi-san/EasyMount">Star on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>Built with GTK&nbsp;4 &amp; PyGObject</span>
+      <span><a href="https://github.com/tobayashi-san/EasyMount">tobayashi-san/EasyMount</a> &middot; <a href="https://github.com/tobayashi-san/EasyMount/issues">Issues</a> &middot; <a href="https://github.com/tobayashi-san/EasyMount/releases">Releases</a></span>
+    </div>
+  </footer>
+
+  <script>
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  </script>
 </body>
 </html>

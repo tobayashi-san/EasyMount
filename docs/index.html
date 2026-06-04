@@ -104,7 +104,13 @@
     @media (max-width: 720px) { .nav-links { display: none; } }
 
     /* ---------- hero ---------- */
-    .hero { padding: 96px 0 40px; position: relative; }
+    .hero { padding: 88px 0 48px; position: relative; }
+    .hero .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
     .eyebrow {
       display: inline-flex; align-items: center; gap: 9px;
       font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em;
@@ -126,7 +132,7 @@
     .lede { margin: 24px 0 0; max-width: 56ch; font-size: 1.16rem; color: var(--dim); }
     .lede code { font-family: var(--mono); color: var(--text); background: var(--panel-2); padding: 1px 7px; border-radius: 6px; font-size: 0.86em; }
 
-    .cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 36px; }
+    .cta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 36px; }
     .btn {
       display: inline-flex; align-items: center; gap: 9px;
       font-weight: 600; font-size: 0.98rem; padding: 12px 22px; border-radius: 11px;
@@ -138,13 +144,14 @@
     .btn.ghost:hover { border-color: var(--teal); }
     .btn svg { width: 18px; height: 18px; }
 
-    .meta-row { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 34px; color: var(--faint); font-size: 0.85rem; font-family: var(--mono); }
+    .meta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; margin-top: 34px; color: var(--faint); font-size: 0.85rem; font-family: var(--mono); }
     .meta-row span { display: inline-flex; align-items: center; gap: 7px; }
     .meta-row b { color: var(--teal-2); font-weight: 600; }
 
     /* hero terminal */
     .term {
-      margin-top: 64px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      width: 100%; max-width: 920px; margin-top: 56px; text-align: left;
+      border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
       background: linear-gradient(180deg, var(--panel), var(--bg-2));
       box-shadow: 0 30px 80px rgba(0,0,0,0.5);
     }
@@ -160,7 +167,7 @@
 
     /* ---------- section frame ---------- */
     section.block { padding: 84px 0; border-top: 1px solid var(--line); }
-    .sec-head { max-width: 60ch; margin-bottom: 44px; }
+    .sec-head { max-width: 60ch; margin: 0 auto 44px; text-align: center; }
     .kicker { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-2); }
     h2 { font-family: var(--display); font-weight: 700; letter-spacing: -0.8px; font-size: clamp(1.7rem, 3.6vw, 2.5rem); margin: 14px 0 0; }
     .sec-head p { color: var(--dim); font-size: 1.08rem; margin: 14px 0 0; }
@@ -186,9 +193,12 @@
     .card .num { position: absolute; top: 16px; right: 18px; font-family: var(--mono); font-size: 0.74rem; color: var(--faint); }
 
     /* ---------- screenshots / sliders ---------- */
-    .shot { margin-top: 30px; }
-    .shot + .shot { margin-top: 30px; }
-    .shot-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+    .shot { width: min(100%, 860px); margin: 30px auto 0; }
+    .shot + .shot { margin-top: 34px; }
+    .shot-wide { width: min(100%, 860px); }
+    .shot-dialog { width: min(100%, 560px); }
+    .shot-compact { width: min(100%, 760px); }
+    .shot-head { display: flex; align-items: baseline; justify-content: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; text-align: center; }
     .shot-head h3 { margin: 0; font-size: 1.12rem; font-weight: 600; }
     .shot-head .tag { font-family: var(--mono); font-size: 0.76rem; color: var(--faint); }
     .frame {
@@ -207,7 +217,7 @@
     @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
 
     /* ---------- install ---------- */
-    .install-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; max-width: 640px; }
+    .install-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; max-width: 640px; margin: 0 auto; }
     .code {
       border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--bg-2);
     }
@@ -215,10 +225,10 @@
     .code header .badge { margin-left: auto; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--teal-2); border: 1px solid rgba(63,154,166,0.3); border-radius: 6px; padding: 2px 8px; }
     .code pre { margin: 0; padding: 18px 16px; font-family: var(--mono); font-size: 0.86rem; line-height: 1.8; color: var(--dim); overflow-x: auto; }
     .code pre .p { color: var(--teal-2); }
-    .note { margin-top: 22px; color: var(--dim); font-size: 0.95rem; border-left: 2px solid var(--teal); padding-left: 16px; }
+    .note { max-width: 640px; margin: 22px auto 0; color: var(--dim); font-size: 0.95rem; border-left: 2px solid var(--teal); padding-left: 16px; }
     .note code { font-family: var(--mono); color: var(--text); }
 
-    .req { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .req { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 26px; }
     .req span { font-family: var(--mono); font-size: 0.82rem; color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; background: var(--panel); }
 
     /* ---------- cta band ---------- */
@@ -233,9 +243,8 @@
     footer a:hover { color: var(--teal-2); }
 
     /* reveal */
-    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
-    .reveal.in { opacity: 1; transform: none; }
-    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+    .reveal { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
 </head>
 <body>
@@ -341,7 +350,7 @@
         <p>EasyMount ships System, Light and Dark themes. Drag the handle to compare the same view in both.</p>
       </div>
 
-      <div class="shot reveal">
+      <div class="shot shot-wide reveal">
         <div class="shot-head"><h3>Shares overview</h3><span class="tag">drag to compare &mdash; light / dark</span></div>
         <div class="frame">
           <img-comparison-slider>
@@ -352,7 +361,7 @@
         </div>
       </div>
 
-      <div class="shot reveal">
+      <div class="shot shot-dialog reveal">
         <div class="shot-head"><h3>Add a network mount</h3><span class="tag">drag to compare &mdash; light / dark</span></div>
         <div class="frame">
           <img-comparison-slider>
@@ -363,10 +372,10 @@
         </div>
       </div>
 
-      <div class="shot reveal">
-        <div class="shot-head"><h3>Settings</h3><span class="tag">theme, host helper &amp; sidebar</span></div>
+      <div class="shot shot-compact reveal">
+        <div class="shot-head"><h3>Info</h3><span class="tag">project details</span></div>
         <div class="frame single">
-          <img src="images/settings-dark.png" alt="EasyMount settings page in dark mode" loading="lazy">
+          <img src="images/info-dark.png" alt="EasyMount info page in dark mode" loading="lazy">
         </div>
       </div>
     </div>

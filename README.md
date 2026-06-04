@@ -33,8 +33,8 @@ Download the latest files from the
 AppImage:
 
 ```sh
-chmod +x EasyMount-0.1.1-x86_64.AppImage
-./EasyMount-0.1.1-x86_64.AppImage
+chmod +x EasyMount-0.1.2-x86_64.AppImage
+./EasyMount-0.1.2-x86_64.AppImage
 ```
 
 On first run, open `Settings -> Host helper` and use `Install / Update Helper`.
@@ -112,7 +112,7 @@ rejects symlinked mount paths so privileged operations cannot escape that tree.
 
 ## Project Status
 
-EasyMount is version `0.1.1`. Treat it as a test release and keep backups of
+EasyMount is version `0.1.2`. Treat it as a test release and keep backups of
 important mount configuration while trying it. Bug reports and reproducible
 mount errors are welcome in
 [GitHub Issues](https://github.com/tobayashi-san/EasyMount/issues).

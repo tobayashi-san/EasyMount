@@ -23,6 +23,11 @@
   </categories>
   <url type="homepage">https://github.com/tobayashi-san/EasyMount</url>
   <releases>
+    <release version="0.1.2" date="2026-06-04">
+      <description>
+        <p>Make AppImage the only public release format and remove the discontinued secondary distribution path.</p>
+      </description>
+    </release>
     <release version="0.1.1" date="2026-06-02">
       <description>
         <p>Fix authenticated SMB automount restore after reboot.</p>

@@ -45,7 +45,7 @@ Successful `self-check` responses include a requirements report:
 ```json
 {
   "ok": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "systemd_dir": "/etc/systemd/system",
   "requirements": {
     "ok": false,

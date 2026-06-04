@@ -5,7 +5,7 @@ from pathlib import Path
 
 APP_ID = "org.easymount.EasyMount"
 APP_NAME = "EasyMount"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 ICON_NAME = APP_ID
 SOURCE_ICON_DIR = Path(__file__).resolve().parent.parent / "data" / "icons"
 

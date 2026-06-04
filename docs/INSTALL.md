@@ -5,8 +5,8 @@ EasyMount has two pieces:
 - the unprivileged GUI
 - the host helper that writes systemd mount units through Polkit
 
-The helper must be installed on the host even when the GUI is later shipped as a
-Flatpak or AppImage.
+The helper must be installed on the host even when the GUI is later shipped as
+an AppImage.
 
 ## Development Install
 
@@ -40,13 +40,11 @@ The Settings page has a Host helper section with:
 - `Install / Update Helper`
 
 This exports a small host-helper source tree to the user's cache directory and
-starts the installer through Polkit. In a Flatpak build it uses
-`flatpak-spawn --host`; in an AppImage or normal install it uses `pkexec`
-directly.
+starts the installer through Polkit. In an AppImage or normal install it uses
+`pkexec` directly.
 
 This GUI path installs the host helper pieces needed for mount management. It is
-not a replacement for distro packaging, but it makes local Flatpak/AppImage
-testing easier.
+not a replacement for distro packaging, but it makes AppImage testing easier.
 
 ## Start The App
 

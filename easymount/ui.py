@@ -597,7 +597,7 @@ class MainWindow(Gtk.ApplicationWindow):
         helper_section.append(
             settings_row(
                 "System integration",
-                "Required for Flatpak, AppImage and normal installs to create or remove systemd mount units.",
+                "Required for AppImage and normal installs to create or remove systemd mount units.",
                 helper_actions,
             )
         )

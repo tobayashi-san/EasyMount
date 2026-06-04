@@ -57,13 +57,6 @@ class StorageTests(unittest.TestCase):
                 self.assertTrue(new_path.exists())
                 self.assertEqual(new_path.stat().st_mode & 0o777, 0o600)
 
-    def test_flatpak_uses_host_config_dir_for_profiles(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            with patch("easymount.storage.Path.home", return_value=Path(tmp)), patch(
-                "easymount.storage.is_flatpak", return_value=True
-            ), patch.dict(os.environ, {"XDG_CONFIG_HOME": str(Path(tmp, ".var", "app", "org.easymount.EasyMount", "config"))}):
-                self.assertEqual(default_config_dir(), Path(tmp, ".config", "easymount"))
-
 
 if __name__ == "__main__":
     unittest.main()

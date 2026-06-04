@@ -10,7 +10,6 @@ ICON_NAME = APP_ID
 SOURCE_ICON_DIR = Path(__file__).resolve().parent.parent / "data" / "icons"
 
 HELPER_ENV = "EASYMOUNT_HELPER"
-HOST_HELPER_PATH = "/usr/libexec/easymount-helper"
 HELPER_COMMAND = "easymount-helper"
 HOST_HELPER_CANDIDATES = [
     "/usr/libexec/easymount-helper",

@@ -23,7 +23,7 @@ More views, plus an interactive light/dark comparison, are on the
 - Store SMB passwords through `secret-tool` instead of writing them to unit files
 - Check host requirements from the Settings page
 - Optional sidebar entries for GNOME Files, GTK file pickers and KDE Places
-- AppImage and Flatpak builds for testing on different distributions
+- Portable AppImage builds for testing on different distributions
 
 ## Install
 
@@ -37,16 +37,9 @@ chmod +x EasyMount-0.1.1-x86_64.AppImage
 ./EasyMount-0.1.1-x86_64.AppImage
 ```
 
-Flatpak bundle:
-
-```sh
-flatpak install --user EasyMount-0.1.1-x86_64.flatpak
-flatpak run org.easymount.EasyMount
-```
-
 On first run, open `Settings -> Host helper` and use `Install / Update Helper`.
-The helper is required because sandboxed apps and normal user processes cannot
-write systemd mount units directly.
+The helper is required because normal user processes cannot write systemd mount
+units directly.
 
 ## System Requirements
 
@@ -116,10 +109,6 @@ will then require interactive authentication and may not complete).
 The helper still enforces that a profile may only be created for the calling
 user (`PKEXEC_UID`) and only below that user's `~/Network` directory, and it
 rejects symlinked mount paths so privileged operations cannot escape that tree.
-
-Flatpak may show broad-permission warnings because EasyMount needs home access
-for mount paths, network access for share checks, Secret Service access for SMB
-passwords and host access to install or call the helper.
 
 ## Project Status
 

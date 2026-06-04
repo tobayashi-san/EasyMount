@@ -6,7 +6,6 @@ import subprocess
 from pathlib import Path
 
 from .constants import APP_NAME, VERSION
-from .launcher import is_flatpak
 
 
 POLKIT_POLICY = """<?xml version="1.0" encoding="UTF-8"?>
@@ -170,8 +169,8 @@ def packaging_text(rel_path: str, fallback: str) -> str:
     """Prefer the canonical file in the source tree; fall back to the embedded copy.
 
     The embedded constants keep the helper installable from an installed package
-    or Flatpak sandbox where the ``packaging/`` tree is not shipped, while a
-    source/dev checkout stays the single source of truth.
+    or AppImage where the ``packaging/`` tree is not shipped, while a source/dev
+    checkout stays the single source of truth.
     """
     candidate = REPO_ROOT / rel_path
     try:
@@ -220,17 +219,10 @@ def write_file(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def host_prefix() -> list[str]:
-    if not is_flatpak():
-        return []
-    flatpak_spawn = shutil.which("flatpak-spawn") or "/usr/bin/flatpak-spawn"
-    return [flatpak_spawn, "--host"]
-
-
 def install_host_helper() -> subprocess.CompletedProcess[str]:
     script = export_host_installer()
     return subprocess.run(
-        [*host_prefix(), "pkexec", "/bin/sh", str(script)],
+        ["pkexec", "/bin/sh", str(script)],
         text=True,
         capture_output=True,
         check=False,
@@ -240,7 +232,7 @@ def install_host_helper() -> subprocess.CompletedProcess[str]:
 def uninstall_host_helper() -> subprocess.CompletedProcess[str]:
     script = export_host_installer().parent / "uninstall-host-helper.sh"
     return subprocess.run(
-        [*host_prefix(), "pkexec", "/bin/sh", str(script)],
+        ["pkexec", "/bin/sh", str(script)],
         text=True,
         capture_output=True,
         check=False,

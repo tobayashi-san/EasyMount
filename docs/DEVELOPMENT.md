@@ -52,7 +52,7 @@ rm -rf build easymount.egg-info
 - `easymount/ui.py`: GTK GUI (windows, dialogs, theming)
 - `easymount/app.py`: pure helpers, theme options and GTK CSS
 - `easymount/helper.py`: privileged helper command implementation
-- `easymount/launcher.py`: local and Flatpak helper command launcher
+- `easymount/launcher.py`: local and Polkit command launcher
 - `easymount/unit.py`: systemd unit generation
 - `easymount/models.py`: profile model and validation
 - `easymount/storage.py`: profile persistence

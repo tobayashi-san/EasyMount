@@ -5,7 +5,6 @@ import os
 import tempfile
 from pathlib import Path
 
-from .launcher import is_flatpak
 from .models import MountProfile
 
 
@@ -13,8 +12,6 @@ def config_root() -> Path:
     override = os.environ.get("EASYMOUNT_CONFIG_HOME")
     if override:
         return Path(override)
-    if is_flatpak():
-        return Path.home() / ".config"
     xdg_config = os.environ.get("XDG_CONFIG_HOME")
     if xdg_config:
         return Path(xdg_config)

@@ -5,9 +5,8 @@ EasyMount should be packaged as two cooperating pieces:
 - GUI package: unprivileged app, desktop file, icon and AppStream metadata
 - host helper package: helper executable, Polkit policy and user login agent
 
-Flatpak and AppImage are good fits for the GUI. The host helper must remain a
-native host install because it manages systemd mount units and runtime
-credential files.
+AppImage is the public release format. The host helper must remain a native host
+install because it manages systemd mount units and runtime credential files.
 
 ## Host Helper Files
 
@@ -35,11 +34,9 @@ giving the GUI direct mount privileges:
 
 1. export the Python helper source and install templates to the user's cache
 2. start the exported installer through `pkexec`
-3. on Flatpak, wrap that command with `flatpak-spawn --host`
 
-This is useful for AppImage and local Flatpak testing. For distro repositories
-or Flathub-style distribution, a native host-helper package is still the cleaner
-and more reviewable path.
+This is useful for AppImage testing. For distro repositories, a native
+host-helper package is still the cleaner and more reviewable path.
 
 ## GUI Files
 
@@ -49,25 +46,6 @@ GUI packages should install:
 - `org.easymount.EasyMount.desktop`
 - `org.easymount.EasyMount.metainfo.xml`
 - `org.easymount.EasyMount.svg`
-
-## Flatpak
-
-The manifest lives at:
-
-```sh
-packaging/flatpak/org.easymount.EasyMount.yml
-```
-
-The app launcher detects Flatpak by checking `/.flatpak-info` and runs the host
-helper with:
-
-```sh
-flatpak-spawn --host pkexec /usr/libexec/easymount-helper <command>
-```
-
-That means the host helper package must be installed before the Flatpak GUI can
-create or remove mounts. The GUI can guide users through that helper install by
-launching the same host-side installer through Polkit.
 
 ## AppImage
 

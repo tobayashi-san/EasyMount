@@ -20,7 +20,7 @@ host helper.
 - `models.py`: profile schema, defaults and validation
 - `unit.py`: systemd unit rendering
 - `helper.py`: privileged command handlers
-- `launcher.py`: local/Flatpak helper command construction
+- `launcher.py`: local helper command construction
 - `agent.py`: post-login SMB credential preparation
 - `bookmarks.py`: GNOME Files and KDE Places sidebar integration
 - `secret_store.py`: `secret-tool` wrapper
@@ -59,11 +59,11 @@ after reboot. The login agent writes the credential file first, refreshes the
 systemd unit files, resets previous failures, and then starts the deferred
 automount or mount unit.
 
-## Sandboxed GUI
+## Packaged GUI
 
-Flatpak/AppImage builds should not manage mounts directly. They call the host
-helper instead. This keeps the sandboxed GUI simple and keeps all privileged
-logic in one auditable place.
+AppImage builds should not manage mounts directly. They call the host helper
+instead. This keeps the packaged GUI simple and keeps all privileged logic in
+one auditable place.
 
 ## Helper Installer
 
@@ -72,7 +72,6 @@ The GUI can prepare a host-helper installer for users:
 1. copy the current EasyMount Python package to the user's cache directory
 2. write minimal Polkit and systemd templates next to it
 3. run the generated installer through `pkexec`
-4. use `flatpak-spawn --host` first when running inside Flatpak
 
 The GUI still never writes `/usr`, `/etc/systemd/system` or Polkit files
 itself. Those changes stay inside the small root installer launched through

@@ -207,8 +207,7 @@
     @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
 
     /* ---------- install ---------- */
-    .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    @media (max-width: 860px) { .install-grid { grid-template-columns: 1fr; } }
+    .install-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; max-width: 640px; }
     .code {
       border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--bg-2);
     }
@@ -378,25 +377,20 @@
       <div class="sec-head reveal">
         <div class="kicker">Get started</div>
         <h2>Up and running in two commands</h2>
-        <p>Grab a build from the releases page. On first launch, open <code>Settings &rarr; Host helper</code> and run <code>Install / Update Helper</code>.</p>
+        <p>Grab the AppImage from the releases page. On first launch, open <code>Settings &rarr; Host helper</code> and run <code>Install / Update Helper</code>.</p>
       </div>
 
       <div class="install-grid">
         <div class="code reveal">
-          <header>AppImage <span class="badge">portable</span></header>
+          <header>AppImage <span class="badge">portable release</span></header>
 <pre><span class="p">$</span> chmod +x EasyMount-0.1.1-x86_64.AppImage
 <span class="p">$</span> ./EasyMount-0.1.1-x86_64.AppImage</pre>
-        </div>
-        <div class="code reveal">
-          <header>Flatpak <span class="badge">sandboxed</span></header>
-<pre><span class="p">$</span> flatpak install --user EasyMount-0.1.1-x86_64.flatpak
-<span class="p">$</span> flatpak run org.easymount.EasyMount</pre>
         </div>
       </div>
 
       <p class="note">
-        The helper is required because sandboxed apps and normal user processes can&rsquo;t write
-        systemd mount units directly. It is installed once and protected by Polkit.
+        The helper is required because normal user processes can&rsquo;t write systemd
+        mount units directly. It is installed once and protected by Polkit.
       </p>
 
       <div class="req">
